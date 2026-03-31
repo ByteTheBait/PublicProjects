@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>波 · Nami · Wave Prints</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a0f0a;
+    overflow: hidden;
+    font-family: serif;
+    cursor: grab;
+  }
+  body:active { cursor: grabbing; }
+  canvas { display: block; }
+  #ui {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,220,160,0.6);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-align: center;
+    pointer-events: none;
+    text-transform: uppercase;
+  }
+  #ui span { display: block; margin-top: 4px; font-size: 11px; opacity: 0.5; }
+  #title {
+    position: fixed;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,220,160,0.5);
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="title">波 &nbsp;·&nbsp; Nami &nbsp;·&nbsp; Wave</div>
+<div id="ui">Drag to rotate &nbsp;·&nbsp; Every 90° reveals a new print<span>Four seasons of the great wave</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── Scene Setup ───────────────────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x1a0f0a, 1);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 5.5);
+
+// ─── Four Wave Prints (Canvas Textures) ────────────────────────────────────────
+// Each side: different season/color palette in Japanese woodblock style
+
+const PRINTS = [
+  { // 0° — Summer: Classic Hokusai — deep indigo & white
+    name: "夏 · Natsu · Summer",
+    bg: "#1a3a6b",
+    skyColors: ["#0d2244","#1a3a6b","#2a5298"],
+    waveColors: ["#f0f4ff","#c8d8f8","#8aabdf","#1a3a6b"],
+    foamColor: "#ffffff",
+    mtColor: "#e8e0d0",
+    mtSnow: "#ffffff",
+    sunColor: null,
+    moonColor: null
+  },
+  { // 90° — Autumn: rust, ochre, deep red
+    name: "秋 · Aki · Autumn",
+    bg: "#3d1a08",
+    skyColors: ["#1a0800","#5c2208","#c44a10","#e87230"],
+    waveColors: ["#e8b070","#c47030","#8b3a10","#3d1a08"],
+    foamColor: "#f8d89a",
+    mtColor: "#d4a870",
+    mtSnow: "#f8e8d0",
+    sunColor: "#f5c842",
+    moonColor: null
+  },
+  { // 180° — Winter: pale grey, silver, moonlight
+    name: "冬 · Fuyu · Winter",
+    bg: "#0d1520",
+    skyColors: ["#050a10","#0d1520","#1a2d45","#2a4060"],
+    waveColors: ["#b0c8e0","#7090b0","#3a5878","#0d1520"],
+    foamColor: "#ddeeff",
+    mtColor: "#c8d8e8",
+    mtSnow: "#eaf4ff",
+    sunColor: null,
+    moonColor: "#f0e8c0"
+  },
+  { // 270° — Spring: cherry blossom, soft pink, gold
+    name: "春 · Haru · Spring",
+    bg: "#2d1030",
+    skyColors: ["#1a0820","#4a1840","#8a3070","#d060a0"],
+    waveColors: ["#f0a8c8","#c87098","#8a3060","#2d1030"],
+    foamColor: "#ffe0f0",
+    mtColor: "#e8c0d8",
+    mtSnow: "#fff0f8",
+    sunColor: null,
+    moonColor: "#ffe8a0"
+  }
+];
+
+function drawWavePrint(ctx, W, H, p) {
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  p.skyColors.forEach((c, i) => skyGrad.addColorStop(i / (p.skyColors.length - 1), c));
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Sun or Moon
+  if (p.sunColor) {
+    ctx.beginPath();
+    ctx.arc(W * 0.72, H * 0.18, 38, 0, Math.PI * 2);
+    ctx.fillStyle = p.sunColor;
+    ctx.fill();
+    // Rays
+    ctx.strokeStyle = p.sunColor;
+    ctx.lineWidth = 2;
+    for (let a = 0; a < 12; a++) {
+      const ang = (a / 12) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.72 + Math.cos(ang) * 44, H * 0.18 + Math.sin(ang) * 44);
+      ctx.lineTo(W * 0.72 + Math.cos(ang) * 60, H * 0.18 + Math.sin(ang) * 60);
+      ctx.stroke();
+    }
+  }
+  if (p.moonColor) {
+    ctx.beginPath();
+    ctx.arc(W * 0.75, H * 0.15, 30, 0, Math.PI * 2);
+    ctx.fillStyle = p.moonColor;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(W * 0.75 + 12, H * 0.15, 25, 0, Math.PI * 2);
+    ctx.fillStyle = p.skyColors[1];
+    ctx.fill();
+  }
+
+  // Mt. Fuji silhouette
+  ctx.beginPath();
+  ctx.moveTo(W * 0.3, H * 0.55);
+  ctx.lineTo(W * 0.5, H * 0.12);
+  ctx.lineTo(W * 0.7, H * 0.55);
+  ctx.closePath();
+  ctx.fillStyle = p.mtColor;
+  ctx.fill();
+  // Snow cap
+  ctx.beginPath();
+  ctx.moveTo(W * 0.43, H * 0.22);
+  ctx.lineTo(W * 0.5, H * 0.12);
+  ctx.lineTo(W * 0.57, H * 0.22);
+  ctx.lineTo(W * 0.52, H * 0.24);
+  ctx.lineTo(W * 0.5, H * 0.20);
+  ctx.lineTo(W * 0.48, H * 0.24);
+  ctx.closePath();
+  ctx.fillStyle = p.mtSnow;
+  ctx.fill();
+
+  // Woodblock hatching lines on mountain
+  ctx.strokeStyle = "rgba(0,0,0,0.15)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 18; i++) {
+    const y = H * 0.22 + i * 10;
+    const x1 = W * 0.5 - (y - H * 0.12) * 0.76;
+    const x2 = W * 0.5 + (y - H * 0.12) * 0.76;
+    if (x1 < x2) {
+      ctx.beginPath();
+      ctx.moveTo(Math.max(W * 0.3, x1), y);
+      ctx.lineTo(Math.min(W * 0.7, x2), y);
+      ctx.stroke();
+    }
+  }
+
+  // ── Waves ──────────────────────────────────────────────────────────────────
+  const numLayers = 5;
+  for (let layer = numLayers - 1; layer >= 0; layer--) {
+    const t = layer / (numLayers - 1);
+    const yBase = H * (0.48 + t * 0.45);
+    const amp = (H * 0.10) * (1 - t * 0.5);
+    const waveLen = W * (0.4 + t * 0.3);
+    const phase = layer * 1.1;
+
+    // Wave fill
+    const wGrad = ctx.createLinearGradient(0, yBase - amp, 0, yBase + amp * 0.5);
+    wGrad.addColorStop(0, p.waveColors[0]);
+    wGrad.addColorStop(0.4, p.waveColors[1]);
+    wGrad.addColorStop(0.8, p.waveColors[2]);
+    wGrad.addColorStop(1, p.waveColors[3]);
+    ctx.fillStyle = wGrad;
+
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    // Draw wave path
+    const steps = 120;
+    for (let s = 0; s <= steps; s++) {
+      const x = (s / steps) * W;
+      const sinA = Math.sin((x / waveLen) * Math.PI * 2 + phase);
+      const sinB = Math.sin((x / waveLen) * Math.PI * 3.7 + phase * 0.7) * 0.3;
+      const y = yBase - amp * (sinA + sinB);
+      if (s === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Wave crest / foam on top layers
+    if (layer < 3) {
+      const crestAmp = amp * 1.3;
+      for (let curl = 0; curl < 3; curl++) {
+        const cx = W * (0.15 + curl * 0.32 + layer * 0.06);
+        const sinC = Math.sin((cx / waveLen) * Math.PI * 2 + phase);
+        const sinD = Math.sin((cx / waveLen) * Math.PI * 3.7 + phase * 0.7) * 0.3;
+        const cy = yBase - crestAmp * (sinC + sinD);
+
+        // Curling claw fingers (Hokusai style)
+        ctx.strokeStyle = p.foamColor;
+        ctx.lineWidth = 2.5 - layer * 0.5;
+        ctx.lineCap = "round";
+        for (let f = 0; f < 5; f++) {
+          const fx = cx + (f - 2) * 18;
+          ctx.beginPath();
+          ctx.moveTo(fx, cy);
+          ctx.bezierCurveTo(fx + 12, cy - 18, fx + 22, cy - 8, fx + 16, cy + 10);
+          ctx.stroke();
+        }
+        // Foam arc
+        ctx.strokeStyle = p.foamColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy + 6, 22, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+      }
+
+      // Woodblock-style parallel lines on wave face
+      ctx.strokeStyle = "rgba(0,0,0,0.18)";
+      ctx.lineWidth = 1;
+      for (let ln = 0; ln < 8; ln++) {
+        ctx.beginPath();
+        const yOff = yBase + amp * 0.1 + ln * (amp * 0.08);
+        for (let s = 0; s <= steps; s++) {
+          const x = (s / steps) * W;
+          const sinA = Math.sin((x / waveLen) * Math.PI * 2 + phase);
+          const sinB = Math.sin((x / waveLen) * Math.PI * 3.7 + phase * 0.7) * 0.3;
+          const y = yOff - amp * (sinA + sinB) * 0.15;
+          s === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+  }
+
+  // ── Woodblock paper texture overlay ─────────────────────────────────────────
+  const texCanvas = document.createElement('canvas');
+  texCanvas.width = W; texCanvas.height = H;
+  const tctx = texCanvas.getContext('2d');
+  // Grain
+  for (let i = 0; i < 6000; i++) {
+    const gx = Math.random() * W;
+    const gy = Math.random() * H;
+    tctx.fillStyle = `rgba(${Math.random() > 0.5 ? 255 : 0},${Math.random() > 0.5 ? 220 : 0},${Math.random() > 0.5 ? 150 : 0},${Math.random() * 0.04})`;
+    tctx.fillRect(gx, gy, 1.5, 1.5);
+  }
+  ctx.drawImage(texCanvas, 0, 0);
+
+  // Border — woodblock print frame
+  const bw = 12;
+  ctx.strokeStyle = "rgba(255,200,120,0.35)";
+  ctx.lineWidth = bw;
+  ctx.strokeRect(bw / 2, bw / 2, W - bw, H - bw);
+  ctx.strokeStyle = "rgba(255,200,120,0.15)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(bw + 6, bw + 6, W - (bw + 6) * 2, H - (bw + 6) * 2);
+
+  // Season label (vertical Japanese style, top-right)
+  ctx.save();
+  ctx.fillStyle = "rgba(255,220,160,0.55)";
+  ctx.font = `bold ${Math.round(W * 0.045)}px serif`;
+  ctx.textAlign = "right";
+  ctx.fillText(p.name.split("·")[0].trim(), W - 22, H * 0.12);
+  ctx.restore();
+}
+
+function makeTexture(printIndex) {
+  const W = 1024, H = 1024;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  drawWavePrint(ctx, W, H, PRINTS[printIndex]);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+// ─── Build the Box ─────────────────────────────────────────────────────────────
+// 4 faces of a thin slab (like a rotating tile/card stack)
+// We'll use a BoxGeometry and assign per-face materials
+
+const textures = PRINTS.map((_, i) => makeTexture(i));
+
+// Box: equal width/height/depth — true cube
+const geo = new THREE.BoxGeometry(2.4, 2.4, 2.4);
+
+// Six faces: +x, -x, +y, -y, +z, -z
+// We want: front (+z) = print0, right (+x) = print1, back (-z) = print2, left (-x) = print3
+// Top/bottom: neutral paper color
+const paperMat = new THREE.MeshBasicMaterial({ color: 0xf0e0c0 });
+
+const materials = [
+  new THREE.MeshBasicMaterial({ map: textures[1] }), // +x right
+  new THREE.MeshBasicMaterial({ map: textures[3] }), // -x left
+  paperMat,                                             // +y top
+  paperMat,                                             // -y bottom
+  new THREE.MeshBasicMaterial({ map: textures[0] }), // +z front
+  new THREE.MeshBasicMaterial({ map: textures[2] }), // -z back
+];
+
+const box = new THREE.Mesh(geo, materials);
+scene.add(box);
+
+// Subtle ambient & directional light (though MeshBasicMaterial ignores it — for future glow)
+const ambient = new THREE.AmbientLight(0xfff0d0, 0.6);
+scene.add(ambient);
+
+// ─── Mouse Drag Rotation ──────────────────────────────────────────────────────
+let isDragging = false;
+let prevX = 0, prevY = 0;
+const velocity = { x: 0, y: 0 };
+let targetRotX = 0, targetRotY = 0;
+// Start at a slight angle
+box.rotation.x = 0.2;
+box.rotation.y = -0.3;
+targetRotX = box.rotation.x;
+targetRotY = box.rotation.y;
+
+renderer.domElement.addEventListener('mousedown', e => {
+  isDragging = true;
+  prevX = e.clientX;
+  prevY = e.clientY;
+  velocity.x = 0;
+  velocity.y = 0;
+});
+window.addEventListener('mouseup', () => { isDragging = false; });
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevX;
+  const dy = e.clientY - prevY;
+  targetRotY += dx * 0.012;
+  targetRotX += dy * 0.012;
+  velocity.x = dy * 0.012;
+  velocity.y = dx * 0.012;
+  prevX = e.clientX;
+  prevY = e.clientY;
+});
+
+// Touch
+renderer.domElement.addEventListener('touchstart', e => {
+  isDragging = true;
+  prevX = e.touches[0].clientX;
+  prevY = e.touches[0].clientY;
+  velocity.x = 0; velocity.y = 0;
+});
+window.addEventListener('touchend', () => { isDragging = false; });
+window.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  const dx = e.touches[0].clientX - prevX;
+  const dy = e.touches[0].clientY - prevY;
+  targetRotY += dx * 0.012;
+  targetRotX += dy * 0.012;
+  velocity.x = dy * 0.012;
+  velocity.y = dx * 0.012;
+  prevX = e.touches[0].clientX;
+  prevY = e.touches[0].clientY;
+});
+
+// ─── Animate ──────────────────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (!isDragging) {
+    // Inertia
+    velocity.x *= 0.94;
+    velocity.y *= 0.94;
+    targetRotX += velocity.x;
+    targetRotY += velocity.y;
+
+    // Gentle auto-rotate when idle
+    if (Math.abs(velocity.x) < 0.0005 && Math.abs(velocity.y) < 0.0005) {
+      targetRotY += 0.003;
+    }
+  }
+
+  box.rotation.x += (targetRotX - box.rotation.x) * 0.1;
+  box.rotation.y += (targetRotY - box.rotation.y) * 0.1;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

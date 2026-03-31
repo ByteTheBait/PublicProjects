@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Universe: A Logarithmic Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04060f;
+    --bg2: #080c1a;
+    --panel-bg: rgba(8,12,28,0.97);
+    --border: rgba(100,150,255,0.15);
+    --accent: #4a90e2;
+    --text: #c8d8f0;
+    --text-dim: #6a82a8;
+    --mono: 'Space Mono', monospace;
+    --serif: 'Libre Baskerville', Georgia, serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  #starfield { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 40px 28px 80px;
+  }
+  header { text-align: center; margin-bottom: 52px; }
+  header .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em;
+    color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px;
+  }
+  header h1 {
+    font-family: var(--mono); font-size: clamp(20px, 4vw, 42px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;
+    color: #fff; margin-bottom: 10px;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    font-size: 14px; color: var(--text-dim); max-width: 540px;
+    margin: 0 auto; line-height: 1.75; font-style: italic;
+  }
+
+  /* TEMPERATURE ANIMATION */
+  .temp-widget {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 22px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .temp-widget label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    color: var(--text-dim); text-transform: uppercase; white-space: nowrap;
+  }
+  .temp-widget input[type=range] {
+    flex: 1; min-width: 120px; -webkit-appearance: none;
+    height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+    background: linear-gradient(to right,#fff 0%,#aad4ff 12%,#ff8800 45%,#ff2200 65%,#330011 85%,#04060f 100%);
+  }
+  .temp-widget input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 0 8px var(--accent); cursor: pointer;
+  }
+  .temp-swatch {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2); transition: background 0.15s, box-shadow 0.15s;
+  }
+  .temp-readout {
+    font-family: var(--mono); font-size: 12px; color: #fff;
+    min-width: 180px; white-space: nowrap;
+  }
+  .temp-note {
+    font-size: 11px; color: var(--text-dim); font-style: italic;
+    width: 100%; margin-top: 2px;
+  }
+
+  /* TIMELINE */
+  .timeline-outer { position: relative; margin-bottom: 18px; }
+  .temp-gradient-bar {
+    height: 5px; border-radius: 3px; margin-bottom: 6px;
+    background: linear-gradient(to right,#fff 0%,#ccdfff 8%,#ff9400 40%,#ff2200 60%,#7700bb 75%,#04060f 100%);
+    opacity: 0.65;
+  }
+  #timeline-canvas { display: block; width: 100%; cursor: pointer; }
+  .tick-row {
+    position: relative; height: 22px; margin-top: 4px;
+    font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+  }
+  .tick-row span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+
+  .scale-note {
+    text-align: center; font-family: var(--mono); font-size: 11px;
+    color: var(--text-dim); margin-bottom: 30px; letter-spacing: 0.04em;
+  }
+  .scale-note strong { color: var(--accent); }
+
+  /* CHIPS */
+  .events-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr));
+    gap: 8px; margin-bottom: 36px;
+  }
+  .event-chip {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 11px 13px; cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+    position: relative; overflow: hidden;
+  }
+  .event-chip::before {
+    content:''; position: absolute; top:0; left:0;
+    width:3px; height:100%; background: var(--chip-color,var(--accent));
+    border-radius:3px 0 0 3px;
+  }
+  .event-chip:hover { border-color: var(--chip-color,var(--accent)); background: rgba(74,144,226,.07); transform: translateY(-1px); }
+  .event-chip.active { border-color: var(--chip-color,var(--accent)); background: rgba(74,144,226,.12); }
+  .chip-name { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.04em; color:#fff; margin-bottom:3px; }
+  .chip-time { font-family:var(--mono); font-size:9px; color:var(--text-dim); }
+
+  /* INFO PANEL */
+  #info-panel {
+    background: var(--panel-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 28px 32px; margin-bottom: 32px;
+    display: none; position: relative; animation: slideIn .22s ease;
+  }
+  #info-panel.visible { display: block; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+  .panel-close {
+    position: absolute; top:14px; right:16px;
+    background:none; border:1px solid var(--border); color:var(--text-dim);
+    font-family:var(--mono); font-size:11px; padding:3px 9px;
+    border-radius:4px; cursor:pointer; transition:color .2s,border-color .2s;
+  }
+  .panel-close:hover { color:#fff; border-color:#fff; }
+  .panel-header { display:flex; align-items:flex-start; gap:18px; margin-bottom:18px; flex-wrap:wrap; }
+  .panel-dot {
+    width:44px; height:44px; border-radius:50%; flex-shrink:0; margin-top:2px;
+    border:2px solid rgba(255,255,255,.2);
+  }
+  .panel-name { font-family:var(--mono); font-size:18px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .panel-stats { display:flex; gap:18px; flex-wrap:wrap; }
+  .stat { display:flex; flex-direction:column; gap:1px; }
+  .stat-label { font-family:var(--mono); font-size:8px; letter-spacing:.2em; color:var(--text-dim); text-transform:uppercase; }
+  .stat-value { font-family:var(--mono); font-size:13px; color:var(--accent); font-weight:700; }
+  .panel-divider { border:none; border-top:1px solid var(--border); margin:14px 0; }
+  .panel-explanation { font-size:14.5px; line-height:1.82; color:var(--text); }
+  .panel-explanation strong { color:#fff; }
+
+  /* MILESTONES */
+  .milestone-section { border-top:1px solid var(--border); padding-top:28px; margin-top:8px; }
+  .milestone-section h2 {
+    font-family:var(--mono); font-size:12px; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--text-dim); margin-bottom:18px;
+  }
+  .milestone {
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:7px; padding:18px 22px; margin-bottom:10px;
+  }
+  .milestone h3 {
+    font-family:var(--mono); font-size:11px; font-weight:700;
+    color:var(--accent); text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px;
+  }
+  .milestone p, .milestone li { font-size:13px; line-height:1.75; color:var(--text-dim); }
+  .milestone code {
+    font-family:var(--mono); background:rgba(74,144,226,.1); color:#7abfff;
+    padding:1px 4px; border-radius:3px; font-size:11px;
+  }
+  .milestone ul { padding-left:16px; }
+  .milestone ul li { margin-bottom:3px; }
+  .eq { font-family:var(--mono); font-size:12px; color:#7abfff; margin:8px 0; display:block; }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="wrapper">
+
+  <header>
+    <div class="eyebrow">Cosmology · Logarithmic Scale · 11 Events</div>
+    <h1>13.8 Billion Years<br><span>In One View</span></h1>
+    <p>An interactive logarithmic timeline of cosmic history — from the Planck epoch to today. Click any event or chip to explore the physics. Drag the slider to watch the universe cool.</p>
+  </header>
+
+  <!-- ANIMATION WIDGET -->
+  <div class="temp-widget">
+    <label>Drag through time →</label>
+    <input type="range" id="temp-slider" min="0" max="100" value="0" step="0.2">
+    <div class="temp-swatch" id="temp-swatch"></div>
+    <div class="temp-readout" id="temp-readout"></div>
+    <div class="temp-note">The universe radiates like a blackbody. At 10³² K it glows blinding white; at 3000 K it's orange-red; below ~1000 K it drops into invisible infrared. Today's CMB sits at 2.725 K — far too cold to glow at all. Drag to explore 30 orders of magnitude of cooling.</div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-outer">
+    <div class="temp-gradient-bar"></div>
+    <canvas id="timeline-canvas" height="130"></canvas>
+    <div class="tick-row" id="tick-row"></div>
+  </div>
+
+  <div class="scale-note">
+    Timeline is <strong>logarithmic</strong>: <strong>x = (log t − log t_min) / (log t_max − log t_min)</strong>. Each equal visual distance spans one decade. The first second occupies ≈ 47% of total width.
+  </div>
+
+  <!-- CHIPS -->
+  <div class="events-grid" id="events-grid"></div>
+
+  <!-- INFO PANEL -->
+  <div id="info-panel">
+    <button class="panel-close" id="panel-close">✕ Close</button>
+    <div class="panel-header">
+      <div class="panel-dot" id="panel-dot"></div>
+      <div>
+        <div class="panel-name" id="panel-name"></div>
+        <div class="panel-stats">
+          <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="panel-time"></span></div>
+          <div class="stat"><span class="stat-label">Temperature</span><span class="stat-value" id="panel-temp"></span></div>
+          <div class="stat"><span class="stat-label">Age of Universe</span><span class="stat-value" id="panel-age"></span></div>
+        </div>
+      </div>
+    </div>
+    <hr class="panel-divider">
+    <div class="panel-explanation" id="panel-expl"></div>
+  </div>
+
+  <!-- MILESTONE ANSWERS -->
+  <div class="milestone-section">
+    <h2>Milestone Working — Physics &amp; Design Decisions</h2>
+
+    <div class="milestone">
+      <h3>Milestone 1a — Linear Scale Calculation</h3>
+      <p>The universe is 13.8 × 10⁹ yr = <strong>4.354 × 10¹⁷ seconds</strong>. On a 1000-pixel screen, each pixel represents 4.354 × 10¹⁴ s. The first second would occupy:</p>
+      <span class="eq">1 s ÷ (4.354 × 10¹⁴ s/px) ≈ 2.3 × 10⁻¹⁵ pixels</span>
+      <p>That is roughly ten million times smaller than a single hydrogen atom. Completely invisible — you would need a screen approximately <strong>1.4 × 10⁸ km wide</strong> (about the distance from Earth to the Sun) just to show the first second at 1 pixel per second.</p>
+    </div>
+
+    <div class="milestone">
+      <h3>Milestone 1b — Logarithmic Mapping Formula</h3>
+      <p>Given time <em>t</em> in seconds, with t_min = 5.4 × 10⁻⁴³ s and t_max = 4.354 × 10¹⁷ s:</p>
+      <span class="eq">x_fraction = (log₁₀(t) − log₁₀(t_min)) / (log₁₀(t_max) − log₁₀(t_min))</span>
+      <p>This spans log₁₀(4.354 × 10¹⁷) − log₁₀(5.4 × 10⁻⁴³) ≈ 17.64 − (−42.27) = <strong>59.9 decades</strong>. The CMB at 380,000 yr ≈ 1.2 × 10¹³ s maps to fraction ≈ 0.52 — just left of centre. The first second (1 s) maps to fraction ≈ 0.71 — which means the first second occupies 71% of the width, confirming the log scale gives the early universe its rightful real estate.</p>
+    </div>
+
+    <div class="milestone">
+      <h3>Milestone 1d — Why t_min = Planck Time</h3>
+      <p>At scales smaller than the Planck time (5.4 × 10⁻⁴³ s), quantum gravitational fluctuations become so energetic that spacetime itself has no smooth, continuous structure. Neither general relativity nor quantum field theory applies; both break down. We have no physical theory capable of making predictions before this moment, so there is no meaningful physical starting point earlier than the Planck time.</p>
+    </div>
+
+    <div class="milestone">
+      <h3>Why a Logarithmic Scale?</h3>
+      <ul>
+        <li>On a linear scale, the entire epoch from the Big Bang to recombination (380,000 years) occupies 2.8 × 10⁻⁵ of the total timeline — invisible at any usable screen resolution.</li>
+        <li>The interesting physics spans 43 orders of magnitude in the first 380,000 years alone.</li>
+        <li>The log scale gives each factor-of-10 in time equal visual weight, matching the way physicists actually divide cosmic history into epochs.</li>
+        <li>A log scale makes it immediately legible that "the early universe" is not a thin sliver — it dominates the visual space, as it should.</li>
+      </ul>
+    </div>
+
+    <div class="milestone">
+      <h3>Animation — Option A: Temperature Colour Slider</h3>
+      <p>The slider maps cosmic time logarithmically to temperature (from 10³² K at the Planck epoch to 2.725 K today). The colour swatch shows the corresponding blackbody emission colour — the actual colour that region of space would glow if you could see it. At 10³² K: blinding white (all visible wavelengths). At 5000–6000 K: yellow-white (like the Sun's surface). At 3000 K: deep orange-red (the CMB release). Below ~1000 K: infrared and below — shown as crimson fading to black, because the light has left the visible spectrum entirely.</p>
+    </div>
+
+    <div class="milestone">
+      <h3>Design Decisions</h3>
+      <ul>
+        <li><strong>Horizontal timeline</strong> — suits the left-to-right reading direction and makes the animation slider intuitive alongside the track.</li>
+        <li><strong>Timeline ends at "Now"</strong> — the universe will continue but we have no confirmed physics for the far future; the timeline ends at what we know.</li>
+        <li><strong>Planck epoch shown with a hard left boundary</strong> and a label — the edge is clear, not faded, because it is a real physical boundary of our knowledge, not a gradual uncertainty.</li>
+        <li><strong>Colour palette</strong> — white-blue (hot) → orange → deep red → black (cold), mapping blackbody radiation across ~30 orders of magnitude.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────
+const T_MIN = 5.4e-43;
+const T_MAX = 4.354e17;
+const LOG_MIN = Math.log10(T_MIN);
+const LOG_MAX = Math.log10(T_MAX);
+
+function logFrac(tS) {
+  return (Math.log10(tS) - LOG_MIN) / (LOG_MAX - LOG_MIN);
+}
+
+// ── EVENT DATA ─────────────────────────────────────────────
+const EVENTS = [
+  {
+    id:'planck', name:'Planck Epoch Ends',
+    timeS:5.4e-43, timeLabel:'5.4 × 10⁻⁴³ s', ageLabel:'10⁻⁴³ s',
+    temp:'10³² K', tempK:1e32, color:'#ffffff',
+    expl:`The Planck epoch marks the <strong>earliest moment physics can describe</strong> — 5.4 × 10⁻⁴³ seconds after the Big Bang. Before this instant, quantum gravitational effects dominated so completely that spacetime had no smooth, continuous structure, and neither general relativity nor quantum field theory applies. It is not that nothing existed — it is that our mathematical tools simply stop working, and we cannot make meaningful predictions. The timeline cannot start at t = 0 for this reason: there is no physical theory to describe what "t = 0" means. Everything we can say about the universe begins here.`
+  },
+  {
+    id:'inflation', name:'Inflation',
+    timeS:1e-36, timeLabel:'10⁻³⁶ – 10⁻³² s', ageLabel:'~10⁻³⁶ s',
+    temp:'~10²⁷ K', tempK:1e27, color:'#aad4ff',
+    expl:`In a tiny fraction of a second, the universe underwent <strong>exponential expansion</strong>, doubling in size at least 60 times over — driven not by ordinary matter but by a hypothetical energy-dense field called the inflaton. This explains several puzzles: why the CMB looks nearly identical in all directions (regions now far apart were once causally connected), and why the universe appears spatially flat. Most crucially, tiny <strong>quantum fluctuations</strong> — random energy jitters at the sub-Planck scale — were stretched to cosmic proportions. These are the seeds of every galaxy and large-scale structure in the observable universe. Without inflation, structure formation has no starting point.`
+  },
+  {
+    id:'quarks', name:'Quark Epoch Ends',
+    timeS:1e-6, timeLabel:'10⁻⁶ s (1 μs)', ageLabel:'1 microsecond',
+    temp:'10¹³ K', tempK:1e13, color:'#ff9955',
+    expl:`For the first microsecond, the universe was a hot quark-gluon plasma: quarks and gluons existed freely because the temperature was too high for them to bind. At ~10¹³ K, a phase transition called <strong>quark confinement</strong> occurred — quarks permanently locked into composite hadrons. Three quarks bound together to form protons and neutrons, the building blocks of all atomic nuclei. At this moment, matter as we recognise it first appeared. Crucially, slightly more matter than antimatter survived — about one extra matter particle per billion annihilations — and the leftover matter became everything in the observable universe.`
+  },
+  {
+    id:'bbn', name:'Big Bang Nucleosynthesis',
+    timeS:180, timeLabel:'3–20 minutes', ageLabel:'~3 minutes',
+    temp:'10⁹ K', tempK:1e9, color:'#ffaa00',
+    expl:`Between 3 and 20 minutes after the Big Bang, the universe had cooled enough for nuclear fusion — but was still hot and dense enough to sustain it. Protons and neutrons fused into <strong>deuterium, helium-3, helium-4, and trace lithium</strong>. The window closed at about 20 minutes: too cool and diffuse for further fusion. The result is a precise quantitative prediction: approximately 75% hydrogen and 25% helium by mass, with tiny lithium traces. This ratio is observed consistently across the entire universe, making Big Bang Nucleosynthesis one of the strongest confirmations of the Big Bang model. <strong>Virtually all the helium in existence was forged in these 17 minutes.</strong>`
+  },
+  {
+    id:'equality', name:'Matter–Radiation Equality',
+    timeS:1.48e12, timeLabel:'~47,000 years', ageLabel:'47,000 years',
+    temp:'~9,000 K', tempK:9000, color:'#ff7744',
+    expl:`In the early universe, radiation (photons and neutrinos) dominated energetically over matter. As space expanded, radiation energy diluted faster — its energy density falling as <em>a</em>⁻⁴ versus matter's <em>a</em>⁻³. At about <strong>47,000 years</strong>, the two energy densities were equal; after this point, matter's gravity took over. This transition is crucial for structure formation: in a radiation-dominated universe, photon pressure suppresses gravitational collapse. Once matter dominates, overdense regions can finally begin contracting under gravity. The seeds planted during inflation could now grow — very slowly — into the cosmic web of filaments, walls, and voids we map today.`
+  },
+  {
+    id:'cmb', name:'Recombination & CMB',
+    timeS:1.2e13, timeLabel:'~380,000 years', ageLabel:'380,000 years',
+    temp:'~3,000 K', tempK:3000, color:'#ff4422',
+    expl:`For the first 380,000 years, the universe was an opaque plasma of free protons and electrons; photons scattered constantly and could not travel freely. When temperature dropped to ~3,000 K, electrons slowed enough to be captured by protons, forming <strong>neutral hydrogen atoms</strong>. Almost instantly, the universe became transparent — photons could travel unobstructed for the first time. That flood of released light is the <strong>Cosmic Microwave Background (CMB)</strong>. We detect it today, stretched by 13.8 billion years of cosmic expansion to microwave wavelengths at just 2.725 K. The CMB's tiny temperature variations (±100 μK) map the density fluctuations that later became galaxies — making it the most detailed image we have of the young universe.`
+  },
+  {
+    id:'darkages', name:'Cosmic Dark Ages',
+    timeS:3e14, timeLabel:'~10 million years', ageLabel:'10–200 Myr',
+    temp:'~300 K', tempK:300, color:'#442255',
+    expl:`After recombination, the universe entered a long, lightless era. Neutral hydrogen filled space — transparent but utterly dark, since there were <strong>no stars, no galaxies, no light sources of any kind</strong>. The only electromagnetic radiation was the cooling CMB, already in the infrared. This silence lasted about 200 million years. Why so long? Building a star requires accumulating enough gas in one place for nuclear fusion to ignite, and gravitational collapse from the tiny CMB fluctuations is a slow process. The universe had to wait for the densest knots in the cosmic web to contract sufficiently. When the first stars finally lit up, they ended this darkness permanently.`
+  },
+  {
+    id:'stars', name:'First Stars',
+    timeS:6.3e15, timeLabel:'~200 million years', ageLabel:'200 Myr',
+    temp:'~60 K', tempK:60, color:'#ffcc44',
+    expl:`The first generation of stars — called <strong>Population III stars</strong> — formed from pure hydrogen and helium with no heavy elements at all. Without metals to radiate heat efficiently, these proto-stellar clouds had to compress further to trigger fusion, likely producing stars hundreds or even thousands of times the mass of the Sun. They burned brilliantly and briefly, dying in catastrophic supernovae within a few million years. Those explosions seeded surrounding gas with the first carbon, oxygen, silicon, and iron — the elements needed for rocky planets, complex chemistry, and eventually life. <strong>Every heavy atom in the universe traces back to a star from this era.</strong>`
+  },
+  {
+    id:'reion', name:'Reionisation',
+    timeS:3.15e16, timeLabel:'200 Myr – 1 Gyr', ageLabel:'~500 Myr',
+    temp:'~20 K', tempK:20, color:'#aa44ff',
+    expl:`As the first stars and early quasars blazed into existence, their intense ultraviolet radiation began <strong>ionising the neutral hydrogen</strong> surrounding them. This process swept through the universe in an uneven, bubble-like pattern — regions around the most luminous sources cleared first, then the bubbles grew and merged. By around 1 billion years after the Big Bang, essentially all intergalactic hydrogen had been reionised. The cosmic dark ages ended permanently. Reionisation fundamentally changed the universe's opacity to high-energy radiation and marks the transition from a gas-filled cosmos to one structured by luminous galaxies and quasars.`
+  },
+  {
+    id:'milkyway', name:'Milky Way Forms',
+    timeS:6.3e16, timeLabel:'~1–2 billion years', ageLabel:'~1.5 Gyr',
+    temp:'~10 K', tempK:10, color:'#4488ff',
+    expl:`Galaxies assembled hierarchically — small clumps of stars and dark matter formed first, then merged into progressively larger structures over billions of years. The <strong>Milky Way</strong> built itself through this process; its oldest stars, found in globular clusters and the galactic bulge, are nearly as old as the universe itself. The spiral structure, the central bar, and the 100-billion-star population emerged from accumulated gas infall and mergers. Galaxy formation is still ongoing: our galaxy is currently consuming smaller satellite galaxies and, in about 4 billion years, will collide and merge with the Andromeda galaxy.`
+  },
+  {
+    id:'solar', name:'Solar System Forms',
+    timeS:2.9e17, timeLabel:'~9.2 billion years', ageLabel:'9.2 Gyr',
+    temp:'~3 K', tempK:3, color:'#ffcc44',
+    expl:`Nine billion years into cosmic history, a molecular cloud enriched with oxygen, carbon, iron, and dozens of heavier elements — forged in stellar generations that lived and died before the Sun existed — began collapsing under its own gravity. The <strong>Sun ignited</strong> at the centre; leftover material settled into a rotating disc; rocky inner planets formed from collisions of planetesimals; gas giants swept up material further out. Earth assembled about 4.54 billion years ago. The story of geology, ocean chemistry, evolution, and every living thing unfolds entirely in the final third of this timeline. We are late arrivals in an old universe.`
+  },
+  {
+    id:'now', name:'Now',
+    timeS:4.354e17, timeLabel:'13.8 billion years', ageLabel:'13.8 billion years',
+    temp:'2.725 K', tempK:2.725, color:'#3366cc',
+    expl:`Today, the universe is 13.8 billion years old. The CMB — once a blazing 3,000 K plasma glow — has cooled to just <strong>2.725 K</strong>, a direct measurement of how much the universe has expanded since recombination. The universe is still expanding, and that expansion is <em>accelerating</em>, driven by dark energy, a mysterious component we can measure but not explain. Star formation is past its peak — fewer new stars are being born per billion years. In the far future, galaxies will recede beyond our horizon, stars will burn out, and the universe will approach a cold, dark equilibrium. We observe it in a privileged middle age: complex enough to have produced us, energetic enough that the lights are still on.`
+  },
+];
+
+// ── LOG SCALE HELPERS ──────────────────────────────────────
+function tempColor(k) {
+  if (k >= 1e28) return '#ffffff';
+  if (k >= 1e12) {
+    const t = (Math.log10(k)-12)/(28-12);
+    return `hsl(${200-t*200},100%,${80+t*20}%)`;
+  }
+  if (k >= 5000) {
+    const t = (Math.log10(k)-Math.log10(5000))/(12-Math.log10(5000));
+    return `hsl(${30+t*170},100%,60%)`;
+  }
+  if (k >= 3000) return '#ff6600';
+  if (k >= 1000) return '#cc2200';
+  if (k >= 100)  return '#660011';
+  if (k >= 10)   return '#330008';
+  return '#15000a';
+}
+
+// ── STARFIELD ─────────────────────────────────────────────
+(function(){
+  const c = document.getElementById('starfield');
+  const cx = c.getContext('2d');
+  let stars = [];
+  function resize(){c.width=innerWidth;c.height=innerHeight;}
+  function init(){
+    resize();
+    stars = Array.from({length:220},()=>({
+      x:Math.random()*c.width, y:Math.random()*c.height,
+      r:Math.random()*1.1+0.2, a:Math.random(),
+      da:(Math.random()-0.5)*0.004
+    }));
+  }
+  function frame(){
+    cx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      s.a=Math.max(.05,Math.min(1,s.a+s.da));
+      if(s.a<=.05||s.a>=1)s.da*=-1;
+      cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(180,210,255,${s.a*0.55})`;cx.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+  init(); frame();
+  addEventListener('resize',resize);
+})();
+
+// ── TIMELINE CANVAS ────────────────────────────────────────
+const tlC = document.getElementById('timeline-canvas');
+const tlX = tlC.getContext('2d');
+let activeId = null;
+
+function drawTL(){
+  const W = tlC.parentElement.clientWidth;
+  tlC.width = W; tlC.height = 130;
+  const TY = 65, TH = 9;
+
+  // gradient track
+  const g = tlX.createLinearGradient(0,0,W,0);
+  g.addColorStop(0,'rgba(255,255,255,.85)');
+  g.addColorStop(.1,'rgba(170,212,255,.75)');
+  g.addColorStop(.38,'rgba(255,148,0,.75)');
+  g.addColorStop(.58,'rgba(200,30,0,.65)');
+  g.addColorStop(.78,'rgba(100,0,120,.5)');
+  g.addColorStop(1,'rgba(15,0,25,.35)');
+  tlX.fillStyle=g;
+  tlX.beginPath();tlX.roundRect(0,TY-TH/2,W,TH,4);tlX.fill();
+
+  EVENTS.forEach((ev,i)=>{
+    const x = Math.round(logFrac(ev.timeS)*W);
+    const isA = ev.id===activeId;
+    const above = i%2===0;
+
+    // tick
+    tlX.beginPath();
+    tlX.moveTo(x, TY-20); tlX.lineTo(x, TY+20);
+    tlX.strokeStyle = isA ? '#fff' : ev.color+'bb';
+    tlX.lineWidth = isA ? 2 : 1; tlX.stroke();
+
+    // dot
+    tlX.beginPath(); tlX.arc(x, TY, isA?9:5, 0, Math.PI*2);
+    tlX.fillStyle = isA?'#fff':ev.color; tlX.fill();
+    if(isA){
+      tlX.beginPath();tlX.arc(x,TY,14,0,Math.PI*2);
+      tlX.strokeStyle='rgba(255,255,255,.3)';tlX.lineWidth=2;tlX.stroke();
+    }
+
+    // label
+    const short = ev.name.length>15?ev.name.slice(0,14)+'…':ev.name;
+    tlX.save();
+    tlX.font = `bold 8.5px 'Space Mono',monospace`;
+    tlX.fillStyle = isA?'#fff':ev.color+'dd';
+    tlX.textAlign='center';
+    tlX.fillText(short, x, above ? TY-27 : TY+33);
+    tlX.restore();
+  });
+
+  // now arrow
+  tlX.font="bold 9px 'Space Mono',monospace";
+  tlX.fillStyle='rgba(80,130,240,.6)';
+  tlX.textAlign='right';
+  tlX.fillText('NOW ▶', W-3, TY+4);
+}
+
+tlC.addEventListener('click',e=>{
+  const rect=tlC.getBoundingClientRect();
+  const fx = (e.clientX-rect.left)/tlC.width;
+  let best=null,bd=Infinity;
+  EVENTS.forEach(ev=>{
+    const d=Math.abs(logFrac(ev.timeS)-fx);
+    if(d<bd){bd=d;best=ev;}
+  });
+  if(best&&bd<0.07)openPanel(best);
+});
+
+// ticks
+function buildTicks(){
+  const row = document.getElementById('tick-row');
+  const tks=[
+    {t:5.4e-43,l:'10⁻⁴³ s'},{t:1e-35,l:'10⁻³⁵ s'},{t:1e-12,l:'10⁻¹² s'},
+    {t:1,l:'1 s'},{t:3.15e7,l:'1 yr'},{t:3.15e11,l:'10⁴ yr'},
+    {t:3.15e14,l:'10⁷ yr'},{t:3.15e16,l:'10⁹ yr'},{t:4.354e17,l:'13.8 Gyr'}
+  ];
+  tks.forEach(tk=>{
+    const sp=document.createElement('span');
+    sp.textContent=tk.l;
+    sp.style.left=(logFrac(tk.t)*100)+'%';
+    row.appendChild(sp);
+  });
+}
+
+// ── CHIPS ──────────────────────────────────────────────────
+function buildChips(){
+  const g=document.getElementById('events-grid');
+  EVENTS.forEach(ev=>{
+    const d=document.createElement('div');
+    d.className='event-chip';
+    d.style.setProperty('--chip-color',ev.color);
+    d.dataset.id=ev.id;
+    d.innerHTML=`<div class="chip-name">${ev.name}</div><div class="chip-time">${ev.timeLabel}</div>`;
+    d.addEventListener('click',()=>openPanel(ev));
+    g.appendChild(d);
+  });
+}
+
+// ── INFO PANEL ─────────────────────────────────────────────
+function openPanel(ev){
+  activeId=ev.id;
+  drawTL();
+  document.querySelectorAll('.event-chip').forEach(c=>c.classList.toggle('active',c.dataset.id===ev.id));
+  document.getElementById('panel-dot').style.background=ev.color;
+  document.getElementById('panel-dot').style.boxShadow=`0 0 20px ${ev.color}`;
+  document.getElementById('panel-name').textContent=ev.name;
+  document.getElementById('panel-time').textContent=ev.timeLabel;
+  document.getElementById('panel-temp').textContent=ev.temp;
+  document.getElementById('panel-age').textContent=ev.ageLabel;
+  document.getElementById('panel-expl').innerHTML=ev.expl;
+  const p=document.getElementById('info-panel');
+  p.classList.remove('visible');void p.offsetWidth;p.classList.add('visible');
+  p.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+document.getElementById('panel-close').addEventListener('click',()=>{
+  document.getElementById('info-panel').classList.remove('visible');
+  activeId=null;
+  document.querySelectorAll('.event-chip').forEach(c=>c.classList.remove('active'));
+  drawTL();
+});
+
+// ── TEMPERATURE SLIDER ─────────────────────────────────────
+const ERAS=[
+  [0,   'Planck Epoch'],
+  [5,   'Inflation'],
+  [15,  'Quark–Hadron Transition'],
+  [28,  'Electroweak Epoch'],
+  [38,  'Big Bang Nucleosynthesis'],
+  [50,  'Photon Epoch'],
+  [57,  'Matter–Radiation Equality'],
+  [64,  'Recombination & CMB Release'],
+  [70,  'Cosmic Dark Ages'],
+  [78,  'First Stars Form'],
+  [83,  'Reionisation'],
+  [88,  'Galaxy Formation Era'],
+  [93,  'Solar System Forms'],
+  [98,  'Present Day'],
+];
+
+function sliderEra(v){
+  let name='Planck Epoch';
+  for(const [threshold,label] of ERAS){if(v>=threshold)name=label;}
+  return name;
+}
+
+function sliderTempK(v){
+  const logHot=32, logCold=Math.log10(2.725);
+  return Math.pow(10, logHot+(v/100)*(logCold-logHot));
+}
+
+function updateSlider(v){
+  const k = sliderTempK(v);
+  const col = tempColor(k);
+  document.getElementById('temp-swatch').style.background=col;
+  document.getElementById('temp-swatch').style.boxShadow=`0 0 18px ${col}`;
+  const logk = Math.log10(k);
+  let tStr;
+  if(logk>=6) tStr=`T = 10^${Math.round(logk)} K`;
+  else if(k>=100) tStr=`T = ${Math.round(k).toLocaleString()} K`;
+  else tStr=`T = ${k.toFixed(3)} K`;
+  document.getElementById('temp-readout').textContent=`${tStr} — ${sliderEra(v)}`;
+}
+
+document.getElementById('temp-slider').addEventListener('input',e=>updateSlider(+e.target.value));
+updateSlider(0);
+
+// ── INIT ───────────────────────────────────────────────────
+buildChips();
+buildTicks();
+drawTL();
+addEventListener('resize',()=>{drawTL();});
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheRedPanda's Projects</title>
+    <style>
+    :root {
+        /* Deep terminal palette */
+        --neon: #bc13fe;         /* Electric Purple */
+        --accent: #4d4dff;       /* Cyber Blue */
+        --dim: rgba(188, 19, 254, 0.2);
+        --bg: #050508;           /* Deep Midnight Black */
+        --surface: rgba(20, 10, 30, 0.6);
+    }
+
+    body {
+        background-color: var(--bg);
+        color: var(--neon);
+        font-family: 'Courier New', Courier, monospace;
+        margin: 0;
+        padding: 40px;
+        overflow-x: hidden;
+        /* Sleek Terminal Scanline & Gradient */
+        background: 
+            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+            radial-gradient(circle at 50% 50%, #1a0a2e 0%, #050508 100%);
+        background-size: 100% 4px, 100% 100%;
+        text-shadow: 0 0 5px rgba(188, 19, 254, 0.5);
+    }
+
+    .header {
+        border-left: 3px solid var(--neon);
+        padding-left: 20px;
+        margin-bottom: 50px;
+        text-transform: uppercase;
+        letter-spacing: 6px;
+        /* Subtle glow for the title */
+        filter: drop-shadow(0 0 8px var(--dim));
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+    }
+
+    .node {
+        border: 1px solid rgba(77, 77, 255, 0.2); /* Using accent color for border */
+        padding: 20px;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        background: var(--surface);
+        backdrop-filter: blur(2px);
+    }
+
+    .node:hover {
+        background: rgba(188, 19, 254, 0.08);
+        border-color: var(--neon);
+        box-shadow: 0 0 20px rgba(188, 19, 254, 0.15), inset 0 0 10px rgba(188, 19, 254, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .node h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        display: flex;
+        justify-content: space-between;
+        color: #fff; /* White headers pop more against purple */
+    }
+
+    .node .summary {
+        font-size: 0.85rem;
+        color: rgba(188, 19, 254, 0.7);
+        margin-top: 10px;
+        height: 3em;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+
+    .node .meta {
+        margin-top: 15px;
+        font-size: 0.7rem;
+        border-top: 1px solid var(--dim);
+        padding-top: 10px;
+        display: flex;
+        gap: 20px;
+        color: var(--accent);
+        text-transform: uppercase;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--neon);
+        display: inline-block;
+        border-radius: 2px; /* Square dots look more 'terminal' */
+        box-shadow: 0 0 8px var(--neon);
+    }
+
+    /* Glitch animation for headers */
+    @keyframes glitch {
+        0% { transform: translate(0); text-shadow: -2px 0 var(--accent); }
+        25% { transform: translate(-1px, 1px); }
+        50% { transform: translate(1px, -1px); text-shadow: 2px 0 var(--neon); }
+        75% { transform: translate(-1px, -1px); }
+        100% { transform: translate(0); }
+    }
+
+    .node:hover h2 {
+        animation: glitch 0.2s linear infinite;
+    }
+</style>
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1> Projects</h1>
+        <p id="clock">SYS_TIME: 00:00:00</p>
+    </div>
+
+    <div class="grid" id="main-grid">
+        </div>
+
+    <script>
+        // Update Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = `SYS_TIME: ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+        }, 1000);
+
+        async function loadHub() {
+            try {
+                const response = await fetch('./projects.json');
+                const projects = await response.json();
+                const grid = document.getElementById('main-grid');
+
+                grid.innerHTML = projects.map(p => `
+                    <div class="node" onclick="window.location.href='${p.url}'">
+                        <h2>
+                            <span>❯ ${p.title}</span>
+                            <span class="status-dot"></span>
+                        </h2>
+                        <div class="summary"> ${p.summary}</div>
+                        <div class="meta">
+                            <span> TYPE: ${p.type}</span>
+                            <span> VER: ${p.version || '1.0.0'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('main-grid').innerHTML = "[ERROR]: UNABLE_TO_LOAD_MANIFEST";
+            }
+        }
+
+        loadHub();
+    </script>
+</body>
+</html>

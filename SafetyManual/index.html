@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Manual for the Digital Age — Recognizing Fascist Propaganda</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --aged: #e8e0cc;
+    --red: #c0392b;
+    --red-dark: #7b241c;
+    --gold: #b7860b;
+    --stamp-green: #1a4a2e;
+    --muted: #6b6252;
+    --warning: #e67e22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1410;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* Paper texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    mix-blend-mode: multiply;
+  }
+
+  .cover {
+    background: var(--paper);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    border-bottom: 8px solid var(--red);
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(0,0,0,0.04) 28px,
+      rgba(0,0,0,0.04) 29px
+    );
+  }
+
+  .classification-bar {
+    background: var(--red);
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    padding: 8px 40px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .cover-seal {
+    width: 90px;
+    height: 90px;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px;
+    position: relative;
+    animation: rotateSeal 20s linear infinite;
+  }
+
+  @keyframes rotateSeal {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .seal-inner {
+    width: 70px;
+    height: 70px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    animation: rotateSeal 20s linear reverse infinite;
+  }
+
+  .manual-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .cover h1 span {
+    color: var(--red);
+    display: block;
+    font-style: italic;
+  }
+
+  .cover-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    max-width: 600px;
+  }
+
+  .cover-divider {
+    width: 200px;
+    height: 2px;
+    background: var(--ink);
+    margin: 20px auto;
+    position: relative;
+  }
+
+  .cover-divider::before, .cover-divider::after {
+    content: '◆';
+    position: absolute;
+    top: -8px;
+    font-size: 10px;
+  }
+  .cover-divider::before { left: -15px; }
+  .cover-divider::after { right: -15px; }
+
+  .cover-desc {
+    max-width: 580px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .start-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 16px 48px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .start-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--ink);
+    pointer-events: none;
+  }
+
+  .start-btn:hover {
+    background: var(--red-dark);
+    transform: translate(-2px, -2px);
+  }
+
+  .start-btn:hover::after {
+    transform: translate(4px, 4px);
+  }
+
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--ink);
+    color: var(--aged);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 10px 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Main manual content */
+  .manual {
+    display: none;
+    background: var(--paper);
+  }
+
+  .manual.active { display: block; }
+
+  /* Navigation */
+  .nav {
+    background: var(--ink);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    color: var(--aged);
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover, .nav-btn.active {
+    color: white;
+    border-bottom-color: var(--red);
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--red);
+    transition: width 0.3s;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+
+  /* Sections */
+  .section {
+    display: none;
+    padding: 60px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section.active { display: block; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+
+  .intro-text {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 32px;
+    border-left: 4px solid var(--red);
+    padding-left: 20px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #3a3530;
+    margin-bottom: 16px;
+  }
+
+  /* Warning box */
+  .warning-box {
+    background: #fff8f0;
+    border: 1px solid var(--warning);
+    border-left: 5px solid var(--warning);
+    padding: 20px 24px;
+    margin: 28px 0;
+    position: relative;
+  }
+
+  .warning-box::before {
+    content: '⚠ EDITORIAL NOTE';
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--warning);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  /* Comparison cards */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 32px 0;
+  }
+
+  @media (max-width: 640px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  .compare-card {
+    border: 1px solid #d4ccc0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .compare-card-era {
+    padding: 10px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: white;
+  }
+
+  .compare-card.historical .compare-card-era { background: #4a3728; }
+  .compare-card.modern .compare-card-era { background: #1a2e4a; }
+
+  .compare-card-body {
+    padding: 20px;
+    background: white;
+  }
+
+  .compare-card-technique {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .compare-card p {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  .quote-block {
+    background: var(--aged);
+    border-left: 4px solid var(--muted);
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-style: italic;
+    font-size: 13px;
+    color: #4a3f35;
+    line-height: 1.6;
+  }
+
+  .quote-block cite {
+    display: block;
+    margin-top: 8px;
+    font-style: normal;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  /* Technique accordion */
+  .technique {
+    border: 1px solid #d4ccc0;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .technique-header {
+    padding: 18px 24px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  .technique-header:hover { background: var(--aged); }
+
+  .technique-header.open { background: var(--ink); color: white; }
+
+  .technique-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .technique-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 1px;
+  }
+
+  .technique-header.open .technique-num { color: #ff8080; }
+
+  .technique-arrow {
+    font-size: 18px;
+    transition: transform 0.3s;
+  }
+
+  .technique-header.open .technique-arrow { transform: rotate(180deg); }
+
+  .technique-body {
+    display: none;
+    padding: 24px;
+    background: #fdfaf5;
+    border-top: 1px solid #d4ccc0;
+  }
+
+  .technique-body.open { display: block; }
+
+  /* Red flags checklist */
+  .checklist {
+    list-style: none;
+    margin: 20px 0;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid #e0d8cc;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .checklist li:hover { border-color: var(--red); }
+
+  .checklist li.checked {
+    background: #f0fff4;
+    border-color: var(--stamp-green);
+  }
+
+  .check-box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #d4ccc0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    transition: all 0.2s;
+    font-size: 14px;
+  }
+
+  .checklist li.checked .check-box {
+    background: var(--stamp-green);
+    border-color: var(--stamp-green);
+    color: white;
+  }
+
+  .check-text {
+    flex: 1;
+  }
+
+  .check-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .check-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .danger-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  .danger-high { background: #ffe0e0; color: var(--red); border: 1px solid #fbb; }
+  .danger-med { background: #fff3e0; color: var(--warning); border: 1px solid #fdd; }
+  .danger-low { background: #e8f4fd; color: #2980b9; border: 1px solid #aed; }
+
+  .score-display {
+    background: var(--ink);
+    color: white;
+    padding: 24px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+    min-width: 80px;
+  }
+
+  .score-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #aaa;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .score-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #ddd;
+  }
+
+  /* Action guide */
+  .action-steps {
+    counter-reset: steps;
+  }
+
+  .action-step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding: 24px;
+    background: white;
+    border: 1px solid #d4ccc0;
+    position: relative;
+  }
+
+  .step-number {
+    counter-increment: steps;
+    width: 44px;
+    height: 44px;
+    background: var(--red);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  .step-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .step-content p {
+    font-size: 14px;
+    margin: 0;
+    color: #555;
+  }
+
+  /* Resources */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .resource-card {
+    background: white;
+    border: 1px solid #d4ccc0;
+    padding: 20px;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .resource-card:hover {
+    border-color: var(--red);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .resource-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .resource-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .resource-card p {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Stamp effect */
+  .stamp {
+    display: inline-block;
+    border: 3px solid;
+    padding: 6px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transform: rotate(-5deg);
+    margin: 4px;
+  }
+
+  .stamp-red { color: var(--red); border-color: var(--red); }
+  .stamp-green { color: var(--stamp-green); border-color: var(--stamp-green); }
+
+  .section-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .nav-arrow {
+    background: none;
+    border: 2px solid var(--ink);
+    padding: 12px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ink);
+  }
+
+  .nav-arrow:hover {
+    background: var(--ink);
+    color: white;
+  }
+
+  hr.ornate {
+    border: none;
+    border-top: 1px solid #d4ccc0;
+    margin: 32px 0;
+    position: relative;
+    text-align: center;
+  }
+
+  hr.ornate::after {
+    content: '✦ ✦ ✦';
+    position: absolute;
+    top: -10px;
+    background: var(--paper);
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--muted);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .pull-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--red-dark);
+    margin: 32px 0;
+    padding: 24px 32px;
+    border-top: 3px double var(--red);
+    border-bottom: 3px double var(--red);
+    text-align: center;
+  }
+
+  .highlight-box {
+    background: var(--ink);
+    color: var(--aged);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .highlight-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+  }
+
+  .highlight-box p {
+    color: #ccc;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .section { padding: 40px 20px; }
+    .nav-btn { padding: 12px 12px; font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover" id="cover">
+  <div class="classification-bar">FOR IMMEDIATE DISTRIBUTION — PUBLIC EDUCATION DOCUMENT</div>
+  
+  <div class="cover-seal">
+    <div class="seal-inner">👁</div>
+  </div>
+
+  <div class="manual-number">FIELD MANUAL NO. 1 — REVISED DIGITAL EDITION</div>
+  
+  <h1>
+    Safety Manual
+    <span>for the Digital Age</span>
+  </h1>
+  
+  <div class="cover-divider"></div>
+  
+  <p class="cover-subtitle">Recognizing the Rhetoric of Dehumanization<br>Across Historical and Contemporary Media</p>
+
+  <p class="cover-desc">
+    The hate speech didn't go anywhere. It just found better distribution. 
+    Der Stürmer had printing presses — now it has the algorithm, and honestly that's scarier. 
+    This manual equips citizens to recognize propaganda before it takes hold.
+  </p>
+
+  <button class="start-btn" onclick="openManual()">Open Manual</button>
+
+  <div class="bottom-bar">
+    <span>Prepared for Public Education</span>
+    <span>6 Chapters · Interactive Edition</span>
+  </div>
+</div>
+
+<!-- MANUAL -->
+<div class="manual" id="manual">
+  <nav class="nav" id="nav">
+    <button class="nav-btn active" onclick="showSection(0)" data-section="0">I. Introduction</button>
+    <button class="nav-btn" onclick="showSection(1)" data-section="1">II. The Rhetoric</button>
+    <button class="nav-btn" onclick="showSection(2)" data-section="2">III. Then vs. Now</button>
+    <button class="nav-btn" onclick="showSection(3)" data-section="3">IV. Red Flags</button>
+    <button class="nav-btn" onclick="showSection(4)" data-section="4">V. Action Plan</button>
+    <button class="nav-btn" onclick="showSection(5)" data-section="5">VI. Resources</button>
+  </nav>
+
+  <!-- SECTION 1: INTRODUCTION -->
+  <div class="section active" id="s0">
+    <div class="section-label">Chapter I</div>
+    <h2>Why Propaganda Succeeds</h2>
+    
+    <p class="intro-text">
+      Nobody thinks they're being manipulated. That's kind of the whole point. When people saw the German propaganda posters, they didn't stop to think. This is what makes propaganda so effective at not convincing, but getting a subconcious association between two things.
+      Propaganda works not by forcing belief — but by making certain ideas feel natural, inevitable, and even obvious.
+    </p>
+
+    <p>
+      The Holocaust didn't start with gas chambers. Years of ordinary people reading ordinary-looking newspapers came first. That part is the part that should keep you up at night. Between 1933 and 1939, years before mass murder commenced, the Nazi regime conducted a systematic campaign to redefine Jewish Germans — first as different, then as dangerous, then as something less than human. By the time genocide began, millions of ordinary people had been psychologically prepared to look away, or worse, to participate.
+    </p>
+
+    <p>
+      There's a word for this — dehumanization. It essentially means using language and images to make a group of people feel like they're not really people, at least not ones worth protecting. And when people are described as vermin, parasites, diseases, floods, or invaders — the neural pathways that prevent us from harming other humans are systematically disabled. Historian James Waller's research documents this across 20th-century genocides: dehumanizing language reliably precedes mass violence.
+    </p>
+
+    <div class="pull-quote">
+      "The most dangerous propaganda doesn't feel like propaganda. It feels like common sense, shared by people you respect."
+    </div>
+
+    <p>
+      Those same techniques work just as well on Twitter. Better, actually, because the algorithm rewards fear and outrage. Social media algorithms favor outrage and fear. Deepfake technology can fabricate video evidence. Meme formats can compress and spread complex hateful ideas in seconds. The speed has changed. The human vulnerabilities being exploited have not.
+    </p>
+
+    <div class="warning-box">
+      This manual uses historical and contemporary examples of hate speech and dehumanizing rhetoric for educational analysis only. The purpose is protective: understanding how propaganda works is the first and most essential defense against it. We do not reproduce content to amplify it, but to inoculate against it. Psychological research shows that "pre-bunking" — explaining manipulation techniques before exposure — dramatically reduces susceptibility.
+    </div>
+
+    <div class="highlight-box">
+      <h3>The Inoculation Effect</h3>
+      <p>Research by Sander van der Linden at Cambridge shows that explaining propaganda techniques before exposure — even briefly — reduces susceptibility by 20–70%. You are already becoming more resistant by reading this.</p>
+    </div>
+
+    <div class="section-nav">
+      <span></span>
+      <button class="nav-arrow" onclick="showSection(1)">Next: The Rhetoric →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: THE RHETORIC -->
+  <div class="section" id="s1">
+    <div class="section-label">Chapter II</div>
+    <h2>The Six Pillars of Dehumanizing Rhetoric</h2>
+
+    <p class="intro-text">
+      Across history, dehumanizing propaganda relies on a predictable toolkit. These six techniques appear in Nazi propaganda and in contemporary hate speech — the framing differs; the architecture is identical.
+    </p>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">01</span>
+          Animal/Vermin Metaphor
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>The most common form of dehumanization compares a target group to animals associated with disease, infestation, or threat such as rats, cockroaches, parasites, and/or snakes. It works for two reasons. First, it makes the target feel less than human. Second, it triggers disgust — which is one of the hardest emotions to think clearly through.</p>
+        <div class="quote-block">
+          Der Stürmer regularly depicted Jewish people as rats and spiders ensnaring "pure" Germans. Julius Streicher's illustrations were so effective that Nazi officials used them in school curricula.
+          <cite>— Holocaust Encyclopedia, USHMM</cite>
+        </div>
+        <p>The Rwandan genocide was preceded by years of Tutsi people being called "inyenzi" (cockroaches) on Radio Mille Collines. Scholars consider the radio broadcasts a direct mechanism of mass mobilization for murder.</p>
+        <p>In contemporary contexts, this manifests as describing migrants as "infestations," "swarms," or "invasions" — language used by politicians and amplified by algorithms because it generates high engagement through fear.</p>
+      </div>
+    </div>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">02</span>
+          Disease and Contamination
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>Framing a group as a biological threat — a virus, a plague, a poison in the "bloodstream" — activates the immune system metaphor. The solution implied by the metaphor is elimination or purification, not coexistence.</p>
+        <div class="quote-block">
+          "The Jews are undoubtedly a race, but not human. They cannot be human in the sense of being an image of God, the Eternal. The Jews are the image of the Devil. Jewry means the racial tuberculosis of the nations."
+          <cite>— Julius Streicher, Nuremberg rally address, 1935</cite>
+        </div>
+        <p>Nazi propaganda merged disease metaphor with racial "science" — a pseudoscientific framework lending an air of medical objectivity. This pattern recurs: today, fringe content describes LGBTQ+ people or immigrants as "spreading" cultural or moral contagion, often framed in the language of public health.</p>
+      </div>
+    </div>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">03</span>
+          Existential Threat Framing
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>The target group is not merely different — they are an active threat to the survival of the in-group, its culture, its "blood," its future. This framing justifies extreme responses as self-defense.</p>
+        <div class="quote-block">
+          Mein Kampf frames Jewish people not as a minority group but as a world-historical force actively working to destroy Aryan civilization — requiring not tolerance but resistance unto extermination.
+          <cite>— Holocaust Historiography, Yad Vashem</cite>
+        </div>
+        <p>Contemporary equivalents include "Great Replacement Theory" — the claim that demographic change represents a deliberate conspiracy to "replace" a dominant group. This theory has been cited directly in manifestos linked to mass shootings in Christchurch, El Paso, Buffalo, and elsewhere.</p>
+      </div>
+    </div>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">04</span>
+          The Hidden Hand Conspiracy
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>The target group is portrayed as secretly controlling institutions — banks, media, government — while appearing powerless. This conspiracy framing serves two purposes: it explains social ills by blaming a scapegoat, and it immunizes the propaganda against refutation (visible power is just part of the cover).</p>
+        <div class="quote-block">
+          The Nazi propaganda film "The Eternal Jew" (1940) depicted Jewish people as filthy, subhuman, and controlling global finance. This is a paradox that propaganda does not need to resolve. Most people wouldn't think about it, and this is what makes it so powerful and influential.
+          <cite>— Nazi Propaganda Visual Archive, DW History</cite>
+        </div>
+        <p>The structure persists identically in modern antisemitic conspiracy content about "globalists" or George Soros, in anti-Muslim conspiracy theories about "Sharia creep," and in QAnon's claim of a shadowy elite controlling children. The target changes; the architecture does not.</p>
+      </div>
+    </div>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">05</span>
+          Statistical Fabrication & Selective Data
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>Propaganda gives hatred the appearance of objectivity. Fabricated crime statistics, distorted demographics, selectively curated anecdotes all serve to make prejudice feel like it is "just looking at the facts."</p>
+        <div class="quote-block">
+          Nazi statistical publications routinely fabricated data on Jewish "overrepresentation" in professions, deliberately conflating assimilated Jewish professionals with the broader Jewish population to suggest conspiratorial control.
+          <cite>— Richard Evans, The Third Reich in Power</cite>
+        </div>
+        <p>Today, circulating fabricated statistics about crime rates and racial groups is one of the most common forms of online hate speech — appearing in shareable image formats that strip out context and sourcing. The "<em>Black crime statistics</em>" genre of posts traced by researchers at SPLC and ADL is a direct continuation of this technique.</p>
+      </div>
+    </div>
+
+    <div class="technique">
+      <div class="technique-header" onclick="toggleTechnique(this)">
+        <div class="technique-title">
+          <span class="technique-num">06</span>
+          Normalization Through Humor
+        </div>
+        <span class="technique-arrow">▼</span>
+      </div>
+      <div class="technique-body">
+        <p>Humor serves as a desensitization mechanism. Jokes about a target group lower the threshold of what is socially sayable. If you object, you are accused of being humorless — making objection socially costly. Over time, hateful premises embedded in jokes become background assumptions.</p>
+        <div class="quote-block">
+          Caricature was central to Der Stürmer's approach — grotesque visual exaggerations designed to provoke laughter and disgust at the same time. Humor allowed readers to engage with eliminationist content while maintaining psychological distance from its implications.
+          <cite>— Randall Bytwerk, German Propaganda Archive, Calvin University</cite>
+        </div>
+        <p>The meme format is the contemporary equivalent. "It's just a joke" and "edgy humor" function as cover for distributing hate speech at scale. Research on online radicalization documents meme humor as a consistent gateway into white nationalist communities — a process explicitly described in recruitment strategy documents recovered from these networks.</p>
+      </div>
+    </div>
+
+    <div class="section-nav">
+      <button class="nav-arrow" onclick="showSection(0)">← Introduction</button>
+      <button class="nav-arrow" onclick="showSection(2)">Next: Then vs. Now →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: THEN VS NOW -->
+  <div class="section" id="s2">
+    <div class="section-label">Chapter III</div>
+    <h2>Then and Now:<br>The Same Playbook, New Platforms</h2>
+
+    <p class="intro-text">
+      The following comparisons analyze structural parallels between documented Nazi propaganda techniques and identified contemporary hate content patterns. Note: understanding these parallels does not require equivalence between historical contexts — the scale and consequences differ enormously. The structural technique comparisons remain instructive.
+    </p>
+
+    <div class="compare-grid">
+      <div class="compare-card historical">
+        <div class="compare-card-era">1930s–1940s: Der Stürmer / Radio</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">Vermin Imagery</div>
+          <p>Der Stürmer's front pages regularly depicted Jewish people as rats. The 1940 film "Der ewige Jude" opened with footage of rats, then cross-cut to Jewish communities in Poland — one of the most documented examples of dehumanizing visual rhetoric in history.</p>
+          <div class="quote-block">The technique: establish emotional association between a target group and a disgust-inducing animal, then transfer the emotional response to the group itself.<cite>— Philip Zimbardo, "The Lucifer Effect"</cite></div>
+        </div>
+      </div>
+
+      <div class="compare-card modern">
+        <div class="compare-card-era">2016–2025: Social Media / Meme Culture</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">Infestation Language</div>
+          <p>Political rhetoric describing immigrants and asylum seekers as "infestations," "vermin," and "animals poisoning the blood of the country" — language documented by the ADL as echoing Nazi rhetoric — spread virally in 2023–2024 electoral discourse, amplified by algorithmic recommendation systems.</p>
+          <div class="quote-block">Researchers at the Washington Post and ADL documented the specific phrase "poisoning the blood" as both a Nazi-era formulation and a phrase used in contemporary political campaigning.<cite>— ADL, 2023</cite></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card historical">
+        <div class="compare-card-era">1933–1945: Radio Broadcasts</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">False Expert Authority</div>
+          <p>The Reich Ministry of Public Enlightenment employed academics, doctors, and scientists to lend pseudoscientific credibility to racial ideology. "Racial hygiene" was presented as established medical science, with university positions and journals created to formalize it.</p>
+        </div>
+      </div>
+
+      <div class="compare-card modern">
+        <div class="compare-card-era">2020–2025: YouTube / Podcasts / AI</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">Pseudo-Scientific Authority Online</div>
+          <p>The "race realist" pipeline uses academic-adjacent framing — citations, charts, bell curves — to launder racist claims as data. AI-generated content can now produce fake academic abstracts and fabricated statistics at scale, lowering the production cost of this technique to near-zero.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card historical">
+        <div class="compare-card-era">1930s: Newsreels / Photography</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">Fabricated / Staged Visual Evidence</div>
+          <p>Nazi propaganda photographers staged scenes and doctored photographs to illustrate desired narratives. Film was edited to support racial ideology. Audiences had no means of verifying what they saw.</p>
+        </div>
+      </div>
+
+      <div class="compare-card modern">
+        <div class="compare-card-era">2022–2025: Deepfakes / Synthetic Media</div>
+        <div class="compare-card-body">
+          <div class="compare-card-technique">Deepfakes Targeting Ethnic Groups</div>
+          <p>Deepfake videos depicting politicians or public figures of specific ethnic or racial groups committing crimes or making inflammatory statements have been documented in elections in the US, UK, India, and elsewhere. The technology to produce convincing video fakes is now widely available and free.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="ornate">
+
+    <div class="highlight-box">
+      <h3>What Changed: The Velocity and Scale</h3>
+      <p>In 1933, Der Stürmer had a circulation of 500,000 at its peak. A single tweet by a prominent account can reach that audience in under an hour — and algorithmic amplification means provocative content reaches exponentially wider audiences than moderate content. The playbook is from the 1930s. The reach is 2025. Der Stürmer peaked at 500,000 readers. A single viral tweet can hit that before lunch.</p>
+    </div>
+
+    <div class="section-nav">
+      <button class="nav-arrow" onclick="showSection(1)">← The Rhetoric</button>
+      <button class="nav-arrow" onclick="showSection(3)">Next: Red Flags →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: RED FLAGS CHECKLIST -->
+  <div class="section" id="s3">
+    <div class="section-label">Chapter IV</div>
+    <h2>The Digital Red Flag Checklist</h2>
+
+    <p class="intro-text">
+      The following warning signs are distilled from research in propaganda analysis, media literacy, and digital disinformation. When you encounter content in your feed, run it against this checklist. Click each item to mark it — the score at the bottom updates in real time.
+    </p>
+
+    <p>This isn't a partisan checklist. Dehumanizing rhetoric shows up across the political spectrum — though if you look at the research, it's not evenly distributed. Either way, the techniques are the same regardless of who's using them. The question is not "which side" — it's "which technique."</p>
+
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)" data-points="3">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Animal, Vermin, or Infestation Language</div>
+          <p class="check-desc">The content compares a group of people to rats, cockroaches, parasites, invasive species, swarms, or other non-human animals. Or uses "infestation," "invasion," or "plague" to describe human beings.</p>
+        </div>
+        <span class="danger-badge danger-high">High Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="3">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Disease or Contamination Metaphor</div>
+          <p class="check-desc">A group is described as a "cancer," "virus," "poison," or as "infecting," "contaminating," or "corrupting" society, culture, or "the blood."</p>
+        </div>
+        <span class="danger-badge danger-high">High Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="3">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Existential / Replacement Threat Claim</div>
+          <p class="check-desc">The content claims a specific group is being deliberately "replaced," "erased," or "exterminated" by another group or shadowy coordinating force.</p>
+        </div>
+        <span class="danger-badge danger-high">High Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="2">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Unverified or Contextless Statistics</div>
+          <p class="check-desc">The post presents numerical data about crime, intelligence, or behavior attributed to a racial, ethnic, or religious group — without sourcing, or with sources that prove unreliable on investigation.</p>
+        </div>
+        <span class="danger-badge danger-high">High Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="2">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Hidden Conspiracy Framing</div>
+          <p class="check-desc">A group is portrayed as secretly controlling institutions (banks, media, government, schools) while the public is asleep to the danger. The claim is structured so that evidence against it is interpreted as evidence of the cover-up.</p>
+        </div>
+        <span class="danger-badge danger-high">High Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="2">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Emotionally Manipulative Visuals</div>
+          <p class="check-desc">The content uses distorted, grotesque, or animalistic imagery to depict members of a group, or uses before/after or side-by-side comparisons designed to trigger disgust responses.</p>
+        </div>
+        <span class="danger-badge danger-med">Med Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="2">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Plausible Deniability ("Just Joking")</div>
+          <p class="check-desc">Dehumanizing premises are embedded in meme formats, "ironic" framing, or comedic contexts — with "it's just a joke" serving as a defense against objection.</p>
+        </div>
+        <span class="danger-badge danger-med">Med Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="1">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">No Countervailing Perspective</div>
+          <p class="check-desc">The content presents a one-sided picture of a group with no humanizing details, individual variation, or acknowledgment of complexity. All members of the group are depicted as interchangeable threats.</p>
+        </div>
+        <span class="danger-badge danger-med">Med Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="1">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Urgency and Panic Signaling</div>
+          <p class="check-desc">The content insists this information must be shared immediately, that time is running out, or that those who don't act are "asleep" — creating urgency that discourages critical evaluation.</p>
+        </div>
+        <span class="danger-badge danger-med">Med Risk</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="1">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Pseudo-Academic Framing</div>
+          <p class="check-desc">The content uses charts, citations, or scientific-sounding language to present prejudice as objective data. Sources cited prove non-existent, fabricated, or from explicitly ideological organizations when traced.</p>
+        </div>
+        <span class="danger-badge danger-low">Check Sources</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="1">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Othering Through Repetition</div>
+          <p class="check-desc">A group is consistently referred to by a specific negative label, and this label is repeated across multiple posts or sources you encounter — suggesting coordinated messaging rather than organic opinion.</p>
+        </div>
+        <span class="danger-badge danger-low">Check Sources</span>
+      </li>
+
+      <li onclick="toggleCheck(this)" data-points="1">
+        <div class="check-box">✓</div>
+        <div class="check-text">
+          <div class="check-label">Synthetic / AI-Generated Appearance</div>
+          <p class="check-desc">The video, image, or audio shows signs of deepfake manipulation: unnatural lip sync, inconsistent lighting on faces, flickering at hairlines, or audio that doesn't match the speaker's known voice or stated position.</p>
+        </div>
+        <span class="danger-badge danger-low">Verify</span>
+      </li>
+    </ul>
+
+    <div class="score-display" id="scoreDisplay">
+      <div class="score-number" id="scoreNum">0</div>
+      <div>
+        <div class="score-label">Propaganda Risk Score</div>
+        <div class="score-text" id="scoreText">Click the warning signs you've spotted. The higher the score, the more immediately you should stop, verify, and avoid sharing.</div>
+      </div>
+    </div>
+    <div class="highlight-box">
+        <h1>The trick is staying aware.</h1>
+    </div>    
+    <div class="section-nav">
+      <button class="nav-arrow" onclick="showSection(2)">← Then vs. Now</button>
+      <button class="nav-arrow" onclick="showSection(4)">Next: Action Plan →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: ACTION PLAN -->
+  <div class="section" id="s4">
+    <div class="section-label">Chapter V</div>
+    <h2>Your Personal Action Plan</h2>
+
+    <p class="intro-text">
+      Knowledge without action is incomplete. The following seven steps translate media literacy into concrete behaviors that reduce your susceptibility, protect your community, and help slow the spread of dehumanizing content.
+    </p>
+
+    <div class="action-steps">
+      <div class="action-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Pause Before You Share</h3>
+          <p>Studies out of MIT and Yale found that just pausing before you hit share cuts misinformation spread by 20 to 40 percent. Which sounds almost too simple. But it works because the whole design of the feed is built around not pausing. Ask: What emotion am I feeling right now? Content that makes you feel visceral fear, disgust, or outrage is most likely to be manipulative and most likely to spread. These emotions were chosen by the content's creator.</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Lateral Reading</h3>
+          <p>Don't evaluate a source by reading the source — open multiple new tabs and search for what other credible organizations say about this source or this claim. Professional fact-checkers use this technique. The question is not "does this article look credible?" but "what do independent sources say about this source and this claim?"</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Reverse Image Search</h3>
+          <p>Before accepting any image as evidence of what it claims, run it through Google Images or TinEye. Many viral images showing "evidence" of group crimes turn out to be old, from a different country, from a different event, or staged. This takes under 30 seconds and catches a large percentage of visual disinformation.</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Deepfake Detection Checklist</h3>
+          <p>Watch for: lip sync that doesn't match audio precisely; skin texture that appears too smooth or waxy; inconsistent lighting between face and background; hair that blurs unnaturally; and audio cadence that sounds synthesized. When in doubt, search for the original statement from the person — if a politician allegedly said something inflammatory, find the original broadcast.</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h3>Name the Technique, Not Just the Conclusion</h3>
+          <p>When you encounter dehumanizing content, try to name which specific technique is being used — vermin metaphor, conspiracy framing, false statistics. Research shows that labeling the manipulation technique (not just saying "that's wrong") is significantly more effective in conversations with people who've been exposed to it. Explaining the mechanism disrupts the effect.</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <h3>Report and Reduce Algorithmic Amplification</h3>
+          <p>Reporting dehumanizing content does two things: it flags it for human review, and it sends a signal to the algorithm that you don't want similar content. On every major platform, the same content gets shown to you more when you interact with it — including rage-clicking or spending time on it. If you need to engage to evaluate, use reader mode or screenshot rather than platform engagement.</p>
+        </div>
+      </div>
+
+      <div class="action-step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <h3>Inoculate Others — Gently</h3>
+          <p>Share what you know about propaganda techniques — not by calling people foolish, but by explaining the mechanics. "I used to find these kinds of posts really compelling until I realized this format is designed to bypass your critical thinking — here's how it works." Pre-bunking and gentle post-encounter explanation are both effective. Condescension is not.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pull-quote">
+      More outrage isn't the answer — that's exactly what this stuff is designed to produce. The actual move is slower. Name what you're looking at. Then decide not to pass it on.
+    </div>
+
+    <div class="section-nav">
+      <button class="nav-arrow" onclick="showSection(3)">← Red Flags</button>
+      <button class="nav-arrow" onclick="showSection(5)">Next: Resources →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: RESOURCES -->
+  <div class="section" id="s5">
+    <div class="section-label">Chapter VI</div>
+    <h2>Further Reading &amp; Verification Tools</h2>
+
+    <p class="intro-text">
+      The following organizations and tools represent the most reliable resources for ongoing media literacy, propaganda research, and disinformation verification.
+    </p>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-type">Historical Archive</div>
+        <h3>German Propaganda Archive</h3>
+        <p>Calvin University's archive of translated Nazi propaganda materials, maintained by Prof. Randall Bytwerk. The essential scholarly resource for primary sources. propaganda.calvin.edu</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Museum / Education</div>
+        <h3>U.S. Holocaust Memorial Museum</h3>
+        <p>The Encyclopedia of the Holocaust and the Museum's digital resources on propaganda techniques. ushmm.org</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Fact-Checking</div>
+        <h3>Snopes / PolitiFact / FactCheck.org</h3>
+        <p>The three most established English-language fact-checking organizations for political and viral claims.</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Deepfake Detection</div>
+        <h3>Sensity AI / Deepware Scanner</h3>
+        <p>Free tools for analyzing whether video content has been synthetically manipulated. sensity.ai / deepware.ai</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Hate Speech Research</div>
+        <h3>Anti-Defamation League</h3>
+        <p>The ADL's Hate Symbol Database and extremism glossary are the most comprehensive publicly available reference. adl.org</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Media Literacy</div>
+        <h3>First Draft News</h3>
+        <p>First Draft's verification guides and misinfodemic research, designed for journalists and engaged citizens. firstdraftnews.org</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Academic Research</div>
+        <h3>Cambridge Social Decision-Making Lab</h3>
+        <p>Sander van der Linden's lab produced the "inoculation theory" research on propaganda resistance. goviralpro.com</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Reverse Search</div>
+        <h3>Google Reverse Image / TinEye</h3>
+        <p>Right-click any image → "Search image with Google" to find its original context and check if it's been misrepresented.</p>
+      </div>
+    </div>
+
+    <hr class="ornate">
+
+    <div class="highlight-box">
+      <h3>A Final Note</h3>
+      <p>Vigilance is not paranoia. The goal of this manual is not to make you distrust everything — it's to build the specific skills that let you evaluate claims accurately. Most content you encounter is not propaganda. But the small percentage that is, spreads disproportionately. You now have the tools to slow it down.</p>
+    </div>
+
+    <div style="text-align:center; margin-top: 48px;">
+      <span class="stamp stamp-green">Media Literate</span>
+      <span class="stamp stamp-red">Propaganda Aware</span>
+    </div>
+
+    <div class="section-nav">
+      <button class="nav-arrow" onclick="showSection(4)">← Action Plan</button>
+      <button class="nav-arrow" onclick="document.getElementById('cover').scrollIntoView()">↑ Return to Cover</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function openManual() {
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById('manual').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function showSection(idx) {
+    document.querySelectorAll('.section').forEach((s, i) => {
+      s.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.nav-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === idx);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleTechnique(header) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.technique-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.technique-header').forEach(h => h.classList.remove('open'));
+    // Open this one if it was closed
+    if (!isOpen) {
+      body.classList.add('open');
+      header.classList.add('open');
+    }
+  }
+
+  let totalScore = 0;
+  function toggleCheck(li) {
+    const points = parseInt(li.dataset.points);
+    li.classList.toggle('checked');
+    totalScore = 0;
+    document.querySelectorAll('.checklist li.checked').forEach(el => {
+      totalScore += parseInt(el.dataset.points);
+    });
+    updateScore();
+  }
+
+  function updateScore() {
+    document.getElementById('scoreNum').textContent = totalScore;
+    let text = '';
+    if (totalScore === 0) {
+      text = 'No red flags checked. If evaluating a specific piece of content, click any warning signs you observe above.';
+    } else if (totalScore <= 3) {
+      text = 'Low-moderate concern. One or two flags may reflect sloppy argument rather than coordinated propaganda. Verify the specific claims before sharing.';
+    } else if (totalScore <= 7) {
+      text = 'Moderate-high concern. Multiple techniques present. This content has the structural characteristics of deliberate propaganda. Do not share. Consider reporting.';
+    } else {
+      text = 'HIGH ALERT. This content exhibits the hallmarks of deliberate dehumanizing propaganda. Do not share under any circumstances. Report the content and, where possible, the account.';
+      document.getElementById('scoreNum').style.color = '#ff4444';
+    }
+    document.getElementById('scoreText').textContent = text;
+  }
+</script>
+</body>
+</html>

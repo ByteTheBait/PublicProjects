@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Social Media Safety Manual</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1923;
+    --deep: #1a2635;
+    --card: #1e2d3d;
+    --border: #2a3f55;
+    --accent: #e8b86d;
+    --accent2: #5cc8a0;
+    --accent3: #e06b6b;
+    --text: #d8e4f0;
+    --muted: #7a9ab5;
+    --white: #f0f6ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(15,25,35,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.8rem;
+    font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 32px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,184,109,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(92,200,160,0.08) 0%, transparent 50%);
+  }
+  .hero-badge {
+    display: inline-block;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 40px;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 6.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--muted);
+    max-width: 640px;
+    margin: 20px auto 36px;
+    font-weight: 300;
+  }
+  .hero-note {
+    background: rgba(92,200,160,0.1);
+    border: 1px solid rgba(92,200,160,0.3);
+    border-left: 4px solid var(--accent2);
+    border-radius: 8px;
+    padding: 16px 24px;
+    max-width: 640px;
+    margin: 0 auto 44px;
+    font-size: 0.95rem;
+    color: var(--accent2);
+    text-align: left;
+  }
+  .hero-note strong { display: block; margin-bottom: 4px; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .btn-scroll {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent);
+    color: var(--navy);
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 24px rgba(232,184,109,0.35);
+  }
+  .btn-scroll:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(232,184,109,0.5); }
+
+  /* TOC */
+  .toc {
+    background: var(--deep);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 32px;
+  }
+  .toc-inner { max-width: 880px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 10px;
+  }
+  .toc-inner h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; margin-bottom: 32px; color: var(--white);
+  }
+  .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .toc-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .toc-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .toc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.4rem; font-weight: 500;
+    color: var(--border);
+    min-width: 36px;
+  }
+  .toc-title { font-weight: 600; color: var(--text); font-size: 0.95rem; line-height: 1.3; }
+  .toc-item:hover .toc-num { color: var(--accent); }
+
+  /* CHAPTERS */
+  .chapter { padding: 80px 32px; }
+  .chapter:nth-child(odd) { background: var(--navy); }
+  .chapter:nth-child(even) { background: var(--deep); }
+
+  .chapter-inner { max-width: 860px; margin: 0 auto; }
+  .chapter-header { display: flex; align-items: baseline; gap: 20px; margin-bottom: 8px; }
+  .ch-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 4rem; font-weight: 500; color: var(--border); line-height: 1;
+  }
+  .ch-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    color: var(--white); line-height: 1.1;
+  }
+  .chapter-divider {
+    height: 3px; width: 60px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    margin: 16px 0 32px;
+  }
+
+  .chapter p { color: var(--text); font-size: 1.02rem; margin-bottom: 18px; }
+  .chapter p:last-child { margin-bottom: 0; }
+
+  /* STUDY BOX */
+  .study-box {
+    background: rgba(15,25,35,0.7);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent2);
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin: 28px 0;
+  }
+  .study-box .study-tag {
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent2); font-weight: 700; margin-bottom: 8px;
+  }
+  .study-box p { font-size: 0.95rem; color: var(--muted); margin: 0; }
+  .study-box strong { color: var(--text); }
+
+  /* INFO CARDS */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 28px 0; }
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .info-card .ic-icon { font-size: 1.8rem; margin-bottom: 10px; }
+  .info-card .ic-label { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .info-card .ic-val { font-size: 1.4rem; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
+  .info-card .ic-desc { font-size: 0.88rem; color: var(--muted); margin-top: 4px; }
+
+  /* WARNING LIST */
+  .warn-list { list-style: none; margin: 20px 0; }
+  .warn-list li {
+    padding: 12px 16px 12px 44px;
+    position: relative;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.97rem;
+    background: rgba(224,107,107,0.07);
+    border: 1px solid rgba(224,107,107,0.15);
+  }
+  .warn-list li::before {
+    content: '⚠'; position: absolute; left: 14px;
+    color: var(--accent3);
+  }
+
+  /* ACTION PLAN */
+  .action-plan {
+    background: rgba(92,200,160,0.07);
+    border: 1px solid rgba(92,200,160,0.25);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 28px 0;
+  }
+  .action-plan h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; color: var(--accent2); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .action-plan ol { padding-left: 22px; }
+  .action-plan ol li { margin-bottom: 10px; font-size: 0.97rem; }
+  .action-plan ol li strong { color: var(--accent2); }
+
+  /* RED FLAG CALCULATOR */
+  #calculator { padding: 80px 32px; background: var(--deep); }
+  .calc-inner { max-width: 860px; margin: 0 auto; }
+  .calc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.7rem, 4vw, 2.6rem); color: var(--white); margin-bottom: 8px;
+  }
+  .calc-sub { color: var(--muted); margin-bottom: 36px; font-size: 1rem; }
+
+  .flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+  @media(max-width:600px){ .flags-grid { grid-template-columns: 1fr; } }
+
+  .flag-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+  }
+  .flag-item:hover { border-color: var(--accent3); }
+  .flag-item.checked {
+    border-color: var(--accent3);
+    background: rgba(224,107,107,0.08);
+  }
+  .flag-checkbox {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .flag-item.checked .flag-checkbox { background: var(--accent3); border-color: var(--accent3); }
+  .flag-checkbox::after { content: '✓'; color: white; font-size: 0.8rem; display: none; }
+  .flag-item.checked .flag-checkbox::after { display: block; }
+  .flag-text { font-size: 0.92rem; color: var(--text); }
+  .flag-weight { font-size: 0.75rem; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  .calc-result {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 14px; padding: 28px; text-align: center; margin-top: 12px;
+    transition: border-color 0.4s;
+  }
+  .result-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 4rem; font-weight: 500;
+    color: var(--accent); line-height: 1;
+    transition: color 0.4s;
+  }
+  .result-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; margin: 8px 0 4px;
+    color: var(--white);
+  }
+  .result-desc { color: var(--muted); font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
+  .result-bar-wrap { background: var(--border); border-radius: 20px; height: 10px; margin: 20px 0 8px; overflow: hidden; }
+  .result-bar { height: 100%; border-radius: 20px; transition: width 0.5s ease, background 0.4s; }
+
+  /* CHAPTERS specific */
+  .tip-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; margin: 22px 0; }
+  .tip-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+    border-top: 3px solid var(--accent);
+  }
+  .tip-card h4 { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .tip-card p { font-size: 0.87rem; color: var(--muted); margin: 0; line-height: 1.55; }
+
+  /* REFERENCES */
+  #references { padding: 80px 32px; background: var(--navy); }
+  .ref-inner { max-width: 860px; margin: 0 auto; }
+  .ref-inner h2 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--white); margin-bottom: 8px; }
+  .ref-section { margin: 36px 0; }
+  .ref-section h3 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .ref-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px; margin-bottom: 10px;
+  }
+  .ref-item .ref-title { font-weight: 600; color: var(--text); font-size: 0.95rem; margin-bottom: 4px; }
+  .ref-item .ref-meta { font-size: 0.83rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .ref-item a { color: var(--accent); text-decoration: none; }
+  .ref-item a:hover { text-decoration: underline; }
+
+  /* FOOTER */
+  footer {
+    background: var(--deep); border-top: 1px solid var(--border);
+    padding: 40px 32px; text-align: center;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  footer strong { color: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero > * { animation: fadeUp 0.7s ease both; }
+  .hero > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero > *:nth-child(2) { animation-delay: 0.2s; }
+  .hero > *:nth-child(3) { animation-delay: 0.3s; }
+  .hero > *:nth-child(4) { animation-delay: 0.4s; }
+  .hero > *:nth-child(5) { animation-delay: 0.5s; }
+
+  /* MISC */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .tag {
+    font-size: 0.78rem; padding: 4px 12px; border-radius: 40px;
+    border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace;
+  }
+  .tag.danger { border-color: var(--accent3); color: var(--accent3); background: rgba(224,107,107,0.08); }
+  .tag.safe { border-color: var(--accent2); color: var(--accent2); background: rgba(92,200,160,0.08); }
+  .tag.warn { border-color: var(--accent); color: var(--accent); background: rgba(232,184,109,0.08); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">📱 SM Safety Manual</div>
+  <div class="nav-links">
+    <a href="#ch1">Privacy</a>
+    <a href="#ch2">Mental Health</a>
+    <a href="#ch3">Predators</a>
+    <a href="#ch4">Misinformation</a>
+    <a href="#ch5">Addiction</a>
+    <a href="#ch6">Cyberbullying</a>
+    <a href="#calculator">🚩 Red Flag Calc</a>
+    <a href="#references">Research</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Your Complete Guide · 6 Chapters</div>
+  <h1>The Social Media<br><em>Safety Manual</em></h1>
+  <p class="hero-sub">Science-backed information about what social media can do — so you can use it on your own terms, with your eyes wide open.</p>
+  <div class="hero-note">
+    <strong>📢 A note before you read</strong>
+    This manual is <em>not</em> here to scare you off social media or tell you to delete your accounts. Billions of people use these platforms every day in positive ways. We're simply explaining what the research says can happen — and giving you the tools to protect yourself while enjoying what the internet has to offer.
+  </div>
+  <a href="#toc" class="btn-scroll">Start Reading ↓</a>
+</section>
+
+<!-- TABLE OF CONTENTS -->
+<section class="toc" id="toc">
+  <div class="toc-inner">
+    <div class="section-label">Table of Contents</div>
+    <h2>Six Things Everyone Should Know</h2>
+    <div class="toc-grid">
+      <a href="#ch1" class="toc-item"><span class="toc-num">01</span><span class="toc-title">Privacy & Data Collection</span></a>
+      <a href="#ch2" class="toc-item"><span class="toc-num">02</span><span class="toc-title">Mental Health & Self-Image</span></a>
+      <a href="#ch3" class="toc-item"><span class="toc-num">03</span><span class="toc-title">Online Predators & Grooming</span></a>
+      <a href="#ch4" class="toc-item"><span class="toc-num">04</span><span class="toc-title">Misinformation & Manipulation</span></a>
+      <a href="#ch5" class="toc-item"><span class="toc-num">05</span><span class="toc-title">Addiction & Screen Time</span></a>
+      <a href="#ch6" class="toc-item"><span class="toc-num">06</span><span class="toc-title">Cyberbullying & Harassment</span></a>
+      <a href="#calculator" class="toc-item"><span class="toc-num" style="color:var(--accent3)">🚩</span><span class="toc-title">Red Flag Calculator</span></a>
+      <a href="#references" class="toc-item"><span class="toc-num">📚</span><span class="toc-title">Studies & Resources</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 1: PRIVACY -->
+<section class="chapter" id="ch1">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">01</div>
+      <h2 class="ch-title">Privacy &amp; Data Collection</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>Every time you scroll, like, comment, or even just pause on a post, social media platforms are collecting data about you. This isn't a secret — it's written into terms of service that most people never read. Understanding what's being collected is the first step to protecting yourself.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">📍</div><div class="ic-label">Location Data</div><div class="ic-val">Always On</div><div class="ic-desc">Apps often track location even when closed</div></div>
+      <div class="info-card"><div class="ic-icon">👁️</div><div class="ic-label">Data Points Collected</div><div class="ic-val">5,000+</div><div class="ic-desc">Per user, per major platform (Meta estimate)</div></div>
+      <div class="info-card"><div class="ic-icon">💰</div><div class="ic-label">Data Economy</div><div class="ic-val">$240B</div><div class="ic-desc">Global market for personal data (2023)</div></div>
+      <div class="info-card"><div class="ic-icon">🔓</div><div class="ic-label">Data Breaches</div><div class="ic-val">3.8B</div><div class="ic-desc">Facebook records exposed in 2021 breach</div></div>
+    </div>
+
+    <p>Platforms use your data to build a detailed advertising profile. This includes your political views, health concerns, relationship status, financial situation, and even your emotional state. Third-party apps connected to your accounts can also access much of this data.</p>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — Nature Human Behaviour (2013)</div>
+      <p><strong>Researchers at Cambridge University</strong> demonstrated that Facebook "likes" alone could accurately predict a user's race (95% accuracy), sexual orientation (88%), and political affiliation (85%). The study, by <strong>Kosinski, Stillwell &amp; Graepel</strong>, showed that digital footprints reveal far more about a person than they intend to share — even from ostensibly anonymous data.</p>
+    </div>
+
+    <ul class="warn-list">
+      <li>Your deleted posts may not be truly deleted — they can remain in backups for years</li>
+      <li>"Private" messages on some platforms are scanned for advertising data</li>
+      <li>Face recognition in photos can link your identity across platforms</li>
+      <li>Apps you've connected years ago may still have access to your account</li>
+    </ul>
+
+    <div class="action-plan">
+      <h3>✅ Your Privacy Action Plan</h3>
+      <ol>
+        <li><strong>Audit connected apps</strong> quarterly — go to Settings → Apps and revoke access to anything you don't use.</li>
+        <li><strong>Review location permissions</strong> — set social media apps to "only while using," never "always."</li>
+        <li><strong>Use strong, unique passwords</strong> and enable two-factor authentication on every account.</li>
+        <li><strong>Read the privacy settings</strong> — most platforms now offer a "Privacy Checkup" tool.</li>
+        <li><strong>Be mindful of what you share publicly</strong> — your full name, birthday, school, and location together can enable identity theft.</li>
+        <li><strong>Use a VPN</strong> on public Wi-Fi to prevent your social media sessions from being intercepted.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 2: MENTAL HEALTH -->
+<section class="chapter" id="ch2">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">02</div>
+      <h2 class="ch-title">Mental Health &amp; Self-Image</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>Social media isn't inherently bad for mental health — but the way many platforms are designed can negatively affect mood, self-esteem, and body image for some users, particularly teenagers. Being aware of these effects helps you use platforms more consciously.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">😟</div><div class="ic-label">Teen Girls Affected</div><div class="ic-val">32%</div><div class="ic-desc">Report Instagram made body image worse (Meta internal study, 2021)</div></div>
+      <div class="info-card"><div class="ic-icon">😴</div><div class="ic-label">Sleep Disruption</div><div class="ic-val">60%</div><div class="ic-desc">Of teens who use screens before bed report poor sleep quality</div></div>
+      <div class="info-card"><div class="ic-icon">📉</div><div class="ic-label">Depression Link</div><div class="ic-val">2–3×</div><div class="ic-desc">Higher depression rates in heavy vs. light users (Twenge et al.)</div></div>
+      <div class="info-card"><div class="ic-icon">🎭</div><div class="ic-label">Comparison Effect</div><div class="ic-val">~1hr</div><div class="ic-desc">After which passive scrolling measurably lowers mood (Hunt et al.)</div></div>
+    </div>
+
+    <p>Social comparison theory, first proposed by Leon Festinger in 1954, describes our tendency to evaluate ourselves against others. Social media provides an endless stream of curated, filtered highlights — not reality — which makes upward comparisons almost unavoidable.</p>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — Journal of Social & Clinical Psychology (2018)</div>
+      <p><strong>Hunt, Marx, Lipson & Young</strong> (University of Pennsylvania) randomly assigned 143 undergraduates to limit social media to 30 minutes per day for 3 weeks. The limited group showed <strong>significant reductions in loneliness and depression</strong> compared to control groups, suggesting that even moderate reduction in social media use can have meaningful mental health benefits.</p>
+    </div>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — JAMA Pediatrics (2019)</div>
+      <p><strong>Kelly et al.</strong> followed over 10,000 British teenagers and found that girls who used social media more than 5 hours daily were <strong>50% more likely to report depressive symptoms</strong>. The pathway ran through increased cyberbullying exposure, poor sleep, and harmful social comparison — not social media use itself in isolation.</p>
+    </div>
+
+    <div class="action-plan">
+      <h3>✅ Your Mental Health Action Plan</h3>
+      <ol>
+        <li><strong>Set a daily screen time limit</strong> — even 30 minutes less makes a measurable difference. Both iOS and Android have built-in tools.</li>
+        <li><strong>Use social media actively, not passively</strong> — creating, messaging, and commenting is less harmful than endless scrolling.</li>
+        <li><strong>Unfollow accounts that make you feel bad</strong> about your appearance, achievements, or lifestyle. You are in control of your feed.</li>
+        <li><strong>No phones 1 hour before bed</strong> — blue light and emotional stimulation suppress melatonin and delay sleep.</li>
+        <li><strong>Remember the highlight reel</strong> — people share their best moments. The average person's life looks nothing like their Instagram grid.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 3: PREDATORS -->
+<section class="chapter" id="ch3">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">03</div>
+      <h2 class="ch-title">Online Predators &amp; Grooming</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>Online predators use social media to identify, target, and build trust with potential victims — a process called grooming. This chapter is especially important for parents and teenagers. Recognizing grooming tactics is one of the most powerful forms of protection.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">👤</div><div class="ic-label">Online Solicitation</div><div class="ic-val">1 in 7</div><div class="ic-desc">U.S. teens receive unwanted sexual solicitations online (Wolak et al.)</div></div>
+      <div class="info-card"><div class="ic-icon">🎮</div><div class="ic-label">Where It Happens</div><div class="ic-val">Gaming+DMs</div><div class="ic-desc">Most grooming begins in gaming chats or DMs, not just dating apps</div></div>
+      <div class="info-card"><div class="ic-icon">⏱️</div><div class="ic-label">Avg. Grooming Time</div><div class="ic-val">Weeks</div><div class="ic-desc">Predators often build trust over weeks or months before escalating</div></div>
+      <div class="info-card"><div class="ic-icon">🔇</div><div class="ic-label">Victims Who Report</div><div class="ic-val">&lt;10%</div><div class="ic-desc">Most incidents go unreported due to shame or fear</div></div>
+    </div>
+
+    <p>Grooming follows predictable stages: targeting a vulnerable or isolated individual, building trust through gifts, compliments, and shared secrets, isolating the victim from friends and family, and gradually desensitizing them to inappropriate content or requests.</p>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — Journal of Adolescent Health (2018)</div>
+      <p><strong>Villacampa, Gómez-Durán, and colleagues</strong> analyzed grooming behaviors and found that <strong>online offenders consistently exploit loneliness, low self-esteem, and a desire for validation</strong>. The research concluded that digital literacy education and open family communication were the two strongest protective factors against online grooming.</p>
+    </div>
+
+    <ul class="warn-list">
+      <li>Someone who quickly becomes your "best friend" and wants exclusivity</li>
+      <li>An adult who insists on keeping your friendship secret from parents</li>
+      <li>Requests for photos, especially asking you to "not share them"</li>
+      <li>Someone who asks you to move conversations to a more private platform</li>
+      <li>Excessive compliments about your appearance from a new contact</li>
+      <li>Offers of gifts, money, or opportunities that seem too good to be true</li>
+    </ul>
+
+    <div class="action-plan">
+      <h3>✅ Your Safety Action Plan</h3>
+      <ol>
+        <li><strong>Keep profiles private</strong> — only accept requests from people you know in real life.</li>
+        <li><strong>Never share personal info</strong> like your school, address, or daily schedule with online-only contacts.</li>
+        <li><strong>Trust your instincts</strong> — if a conversation makes you uncomfortable, it's okay to end it immediately.</li>
+        <li><strong>Screenshot and report</strong> any inappropriate messages to the platform and to a trusted adult.</li>
+        <li><strong>Tell someone</strong> — if you're a young person, talk to a parent, teacher, or school counselor. You won't be in trouble.</li>
+        <li><strong>Report to authorities</strong> — in the U.S., report to NCMEC CyberTipline (cybertipline.org) or the FBI's IC3.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 4: MISINFORMATION -->
+<section class="chapter" id="ch4">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">04</div>
+      <h2 class="ch-title">Misinformation &amp; Manipulation</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>False information spreads faster on social media than true information — this has been proven in multiple large-scale studies. Understanding why your brain is susceptible to misinformation is the key to building resistance against it.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">⚡</div><div class="ic-label">Spread Speed</div><div class="ic-val">6×</div><div class="ic-desc">Faster than true stories on Twitter (MIT, 2018)</div></div>
+      <div class="info-card"><div class="ic-icon">🧠</div><div class="ic-label">Illusory Truth</div><div class="ic-val">Repeating</div><div class="ic-desc">Seeing false info 3–4× makes people believe it's true</div></div>
+      <div class="info-card"><div class="ic-icon">🫧</div><div class="ic-label">Echo Chambers</div><div class="ic-val">Algorithmic</div><div class="ic-desc">Algorithms optimize for engagement, not accuracy</div></div>
+      <div class="info-card"><div class="ic-icon">🤖</div><div class="ic-label">Bot Accounts</div><div class="ic-val">~15%</div><div class="ic-desc">Estimated % of Twitter accounts that are bots (Varol et al.)</div></div>
+    </div>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Landmark Study — Science (2018) — Vosoughi, Roy & Aral, MIT</div>
+      <p>Analyzing <strong>126,000 news stories</strong> shared on Twitter from 2006 to 2017, MIT researchers found that false news stories were <strong>70% more likely to be retweeted</strong> than true ones, and reached the first 1,500 people six times faster. The culprit was not bots — it was <strong>ordinary humans</strong>, who found false news more novel and emotionally engaging.</p>
+    </div>
+
+    <div class="tip-row">
+      <div class="tip-card"><h4>🔍 Lateral Reading</h4><p>Don't just read the article — open new tabs and search for what other sources say about the source itself.</p></div>
+      <div class="tip-card"><h4>📸 Reverse Image Search</h4><p>Drag a photo into Google Images or TinEye to check if it's been taken out of context.</p></div>
+      <div class="tip-card"><h4>⏸️ The Pause Reflex</h4><p>Strong emotion before sharing is a warning sign. Angry or outraged? Wait 10 minutes before reposting.</p></div>
+      <div class="tip-card"><h4>📅 Check the Date</h4><p>Old news stories are frequently recirculated as if they just happened. Check the publication date first.</p></div>
+    </div>
+
+    <div class="action-plan">
+      <h3>✅ Your Misinformation Action Plan</h3>
+      <ol>
+        <li><strong>Use fact-checking sites</strong> — Snopes, PolitiFact, FactCheck.org, and AP Fact Check are free and reliable.</li>
+        <li><strong>Diversify your feed</strong> — consciously follow sources from different perspectives to avoid echo chambers.</li>
+        <li><strong>Check before you share</strong> — apply lateral reading before passing anything along, especially if it confirms your existing views.</li>
+        <li><strong>Be skeptical of emotional content</strong> — the most viral content is designed to trigger outrage, which overrides critical thinking.</li>
+        <li><strong>Report misinformation</strong> — every platform has a "report" function for false information. Use it.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 5: ADDICTION -->
+<section class="chapter" id="ch5">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">05</div>
+      <h2 class="ch-title">Addiction &amp; Screen Time</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>Social media platforms are explicitly designed to maximize time-on-app. They employ teams of behavioral psychologists and engineers to make their products as compelling as possible. Understanding the mechanisms they use helps you take back control of your own attention.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">📱</div><div class="ic-label">Daily Avg Use</div><div class="ic-val">2h 23m</div><div class="ic-desc">Global average daily social media use (DataReportal, 2024)</div></div>
+      <div class="info-card"><div class="ic-icon">🔔</div><div class="ic-label">Phone Checks / Day</div><div class="ic-val">96×</div><div class="ic-desc">Average number of times Americans check their phones</div></div>
+      <div class="info-card"><div class="ic-icon">🧪</div><div class="ic-label">Dopamine Hook</div><div class="ic-val">Variable</div><div class="ic-desc">Unpredictable rewards (likes) are most addictive — same as slot machines</div></div>
+      <div class="info-card"><div class="ic-icon">😶</div><div class="ic-label">FOMO</div><div class="ic-val">56%</div><div class="ic-desc">Of social media users fear missing out if they don't check regularly</div></div>
+    </div>
+
+    <p>The key mechanism is variable reward — the same psychological process that makes slot machines addictive. You don't know if the next scroll will show something exciting or dull, which keeps you scrolling. Platforms also exploit social reciprocity (likes, comments, follows) and the fear of missing out (FOMO).</p>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — PLOS ONE (2021)</div>
+      <p><strong>Montag, Becker & Gan</strong> found that <strong>problematic social media use shares neurological signatures with substance use disorders</strong>, including reduced gray matter density in regions related to impulse control, and heightened dopamine response to social validation signals. The study emphasized that this doesn't make social media a "drug," but that the addictive design elements are measurable in the brain.</p>
+    </div>
+
+    <ul class="warn-list">
+      <li>Feeling anxious or irritable when you can't access social media</li>
+      <li>Checking your phone within 5 minutes of waking up</li>
+      <li>Losing track of time during scrolling sessions</li>
+      <li>Using social media to cope with negative emotions like boredom or loneliness</li>
+      <li>Failed attempts to reduce usage despite wanting to</li>
+    </ul>
+
+    <div class="action-plan">
+      <h3>✅ Your Screen Time Action Plan</h3>
+      <ol>
+        <li><strong>Turn off non-essential notifications</strong> — you'll check apps intentionally rather than reactively. This single step reduces use by ~30%.</li>
+        <li><strong>Keep your phone out of your bedroom</strong> — charge it in another room overnight.</li>
+        <li><strong>Set app timers</strong> using iOS Screen Time or Android Digital Wellbeing — and actually honor them.</li>
+        <li><strong>Designate phone-free times</strong> — meals, the first hour of the day, and one full day per week.</li>
+        <li><strong>Replace the habit</strong> — identify what need social media is filling (boredom, loneliness) and find healthier alternatives.</li>
+        <li><strong>Do a digital detox</strong> — even 48 hours off social media has been shown to reduce cortisol levels and improve sleep.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 6: CYBERBULLYING -->
+<section class="chapter" id="ch6">
+  <div class="chapter-inner">
+    <div class="chapter-header">
+      <div class="ch-num">06</div>
+      <h2 class="ch-title">Cyberbullying &amp; Harassment</h2>
+    </div>
+    <div class="chapter-divider"></div>
+
+    <p>Cyberbullying is defined as repeated, intentional harm carried out through digital devices. Unlike traditional bullying, it follows victims into their homes, can involve hundreds of bystanders, and can be permanently archived. It is more common than many people realize — and more harmful.</p>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-icon">😢</div><div class="ic-label">Teens Affected</div><div class="ic-val">37%</div><div class="ic-desc">Of U.S. teens have experienced cyberbullying (Pew Research, 2022)</div></div>
+      <div class="info-card"><div class="ic-icon">👧</div><div class="ic-label">Gender Gap</div><div class="ic-val">46% vs 26%</div><div class="ic-desc">Girls vs. boys who experience online harassment</div></div>
+      <div class="info-card"><div class="ic-icon">😶‍🌫️</div><div class="ic-label">Who Tells Adults</div><div class="ic-val">&lt;40%</div><div class="ic-desc">Of bullying victims tell a parent or trusted adult</div></div>
+      <div class="info-card"><div class="ic-icon">💔</div><div class="ic-label">Mental Health Impact</div><div class="ic-val">2× Risk</div><div class="ic-desc">Victims are twice as likely to attempt self-harm (Hinduja & Patchin)</div></div>
+    </div>
+
+    <div class="study-box">
+      <div class="study-tag">🔬 Scientific Study — Cyberbullying Research Center (2019)</div>
+      <p><strong>Hinduja & Patchin</strong>, who have conducted cyberbullying research since 2002, found in a sample of 5,000 students that cyberbullying victims were <strong>significantly more likely to report suicidal ideation</strong>. Critically, they also found that <strong>a single supportive adult relationship</strong> — a parent, coach, or teacher who took concerns seriously — was the single strongest protective factor against these outcomes.</p>
+    </div>
+
+    <div class="tag-row">
+      <span class="tag danger">Direct harassment</span>
+      <span class="tag danger">Exclusion from groups</span>
+      <span class="tag danger">Impersonation</span>
+      <span class="tag danger">Doxing (sharing private info)</span>
+      <span class="tag danger">Pile-ons / brigading</span>
+      <span class="tag danger">Non-consensual photo sharing</span>
+      <span class="tag warn">Subtweeting / vague posts</span>
+      <span class="tag warn">Screenshot sharing</span>
+    </div>
+
+    <div class="action-plan">
+      <h3>✅ Your Anti-Bullying Action Plan</h3>
+      <ol>
+        <li><strong>Document everything</strong> — screenshot harassing messages before reporting or blocking. Date, time, and usernames matter.</li>
+        <li><strong>Block and report</strong> — use in-platform tools immediately. Do not engage or retaliate.</li>
+        <li><strong>Tell someone you trust</strong> — a parent, school counselor, teacher, or trusted adult. You deserve support.</li>
+        <li><strong>Contact the school</strong> if the bully is a classmate — most schools now have cyberbullying policies.</li>
+        <li><strong>Know your legal rights</strong> — in many states and countries, cyberstalking and harassment are criminal offenses.</li>
+        <li><strong>As a bystander</strong> — don't share, like, or amplify. A private supportive message to the victim is one of the most helpful things you can do.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- RED FLAG CALCULATOR -->
+<section id="calculator">
+  <div class="calc-inner">
+    <div class="section-label">Interactive Tool</div>
+    <h2 class="calc-title">🚩 The Red Flag Calculator</h2>
+    <p class="calc-sub">Check any behaviors or experiences you've noticed in your social media use or an online relationship. This tool provides an informal risk awareness score — not a clinical diagnosis.</p>
+
+    <div class="flags-grid" id="flagGrid"></div>
+
+    <div class="calc-result" id="calcResult">
+      <div class="result-score" id="scoreNum">0</div>
+      <div class="result-bar-wrap"><div class="result-bar" id="resultBar" style="width:0%;background:var(--accent2)"></div></div>
+      <div class="result-label" id="resultLabel">No flags checked yet</div>
+      <div class="result-desc" id="resultDesc">Check any behaviors or warning signs above to see your result.</div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCES -->
+<section id="references">
+  <div class="ref-inner">
+    <div class="section-label">Further Reading</div>
+    <h2>Scientific Studies &amp; Resources</h2>
+    <p style="color:var(--muted);margin:10px 0 8px;">The following studies, books, and organizations informed this guide. We encourage you to explore them further.</p>
+
+    <div class="ref-section">
+      <h3>📄 Key Scientific Studies</h3>
+      <div class="ref-item">
+        <div class="ref-title">Vosoughi, Roy & Aral — The spread of true and false news online</div>
+        <div class="ref-meta">Science, Vol. 359, Issue 6380 · 2018 · <a href="https://www.science.org/doi/10.1126/science.aap9559" target="_blank">science.org/doi/10.1126/science.aap9559</a></div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Hunt, Marx, Lipson & Young — No More FOMO: Limiting Social Media Decreases Loneliness and Depression</div>
+        <div class="ref-meta">Journal of Social and Clinical Psychology, 37(10) · 2018 · University of Pennsylvania</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Kosinski, Stillwell & Graepel — Private traits and attributes are predictable from digital records of human behavior</div>
+        <div class="ref-meta">PNAS, 110(15) · 2013 · Cambridge University</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Kelly et al. — Social media use and adolescent mental health: Findings from the UK Millennium Cohort Study</div>
+        <div class="ref-meta">EClinicalMedicine / The Lancet · 2019 · UCL Institute of Child Health</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Hinduja & Patchin — Summarizing the Research on the Relationship Between Cyberbullying and Suicide</div>
+        <div class="ref-meta">Cyberbullying Research Center · 2019 · <a href="https://cyberbullying.org" target="_blank">cyberbullying.org</a></div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Montag, Becker & Gan — The Multiplex Model of Internet Use Disorders and Potential Neural Correlates</div>
+        <div class="ref-meta">PLOS ONE · 2021 · Ulm University, Germany</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Twenge, Martin & Campbell — Decreases in Psychological Well-Being Among American Adolescents After 2012</div>
+        <div class="ref-meta">Emotion, 18(6) · 2018 · San Diego State University</div>
+      </div>
+    </div>
+
+    <div class="ref-section">
+      <h3>🌐 Trusted Organizations &amp; Websites</h3>
+      <div class="ref-item">
+        <div class="ref-title">Common Sense Media — Digital Literacy Resources</div>
+        <div class="ref-meta"><a href="https://www.commonsense.org" target="_blank">commonsense.org</a> — Reviews, guides, and research on kids and technology</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Cyberbullying Research Center</div>
+        <div class="ref-meta"><a href="https://cyberbullying.org" target="_blank">cyberbullying.org</a> — Research, statistics, and reporting tools on cyberbullying</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">National Center for Missing & Exploited Children</div>
+        <div class="ref-meta"><a href="https://www.missingkids.org" target="_blank">missingkids.org</a> — CyberTipline for reporting online exploitation (1-800-THE-LOST)</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Internet Matters — Online Safety Guides</div>
+        <div class="ref-meta"><a href="https://www.internetmatters.org" target="_blank">internetmatters.org</a> — Age-specific advice for children, teens, and parents</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">StopBullying.gov — Official U.S. Government Resource</div>
+        <div class="ref-meta"><a href="https://www.stopbullying.gov" target="_blank">stopbullying.gov</a> — Prevention, reporting tools, and legal information</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">MIT Media Lab — Center for Constructive Communication</div>
+        <div class="ref-meta"><a href="https://ccc.mit.edu" target="_blank">ccc.mit.edu</a> — Research on healthy online discourse and misinformation</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Snopes / FactCheck.org / PolitiFact — Fact Checking</div>
+        <div class="ref-meta"><a href="https://snopes.com" target="_blank">snopes.com</a> · <a href="https://factcheck.org" target="_blank">factcheck.org</a> · <a href="https://politifact.com" target="_blank">politifact.com</a></div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Screen Time Action Network — Healthy Tech Coalition</div>
+        <div class="ref-meta"><a href="https://screentimenetwork.org" target="_blank">screentimenetwork.org</a> — Research-based guidance on healthy digital habits</div>
+      </div>
+    </div>
+
+    <div class="ref-section">
+      <h3>📖 Recommended Books</h3>
+      <div class="ref-item">
+        <div class="ref-title">The Anxious Generation — Jonathan Haidt (2024)</div>
+        <div class="ref-meta">An in-depth examination of how social media has rewired childhood and adolescent mental health</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">Hooked: How to Build Habit-Forming Products — Nir Eyal (2014)</div>
+        <div class="ref-meta">Written by an insider — explains exactly how platforms are designed to capture your attention</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-title">This Is Not Propaganda — Peter Pomerantsev (2019)</div>
+        <div class="ref-meta">A journalist's investigation into modern disinformation campaigns and how they operate on social media</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>The Social Media Safety Manual · Compiled with publicly available scientific research</p>
+  <p style="margin-top:8px;">This guide is for educational purposes only and does not constitute medical, legal, or professional advice.<br>
+  <strong>Remember:</strong> Social media can be a wonderful tool. Use it wisely, protect yourself, and stay informed.</p>
+</footer>
+
+<script>
+  const flags = [
+    // Privacy
+    { text: "You have old/unused apps connected to your social accounts", cat: "Privacy", weight: 1 },
+    { text: "Your social media profile is fully public (anyone can see it)", cat: "Privacy", weight: 1 },
+    { text: "You share your location frequently on posts or stories", cat: "Privacy", weight: 2 },
+    { text: "You use the same password across multiple platforms", cat: "Privacy", weight: 2 },
+
+    // Mental Health
+    { text: "You feel worse about yourself after scrolling social media", cat: "Mental Health", weight: 2 },
+    { text: "You compare your appearance or life to what you see online", cat: "Mental Health", weight: 2 },
+    { text: "Social media use regularly disrupts your sleep", cat: "Mental Health", weight: 2 },
+    { text: "You feel anxious or left out if you haven't checked your feed", cat: "Mental Health", weight: 2 },
+
+    // Predators
+    { text: "You've accepted friend/follow requests from people you've never met", cat: "Safety", weight: 2 },
+    { text: "Someone online has asked you to keep your conversations private", cat: "Safety", weight: 4 },
+    { text: "An online contact has made you feel uncomfortable or pressured", cat: "Safety", weight: 4 },
+    { text: "You've shared your school, home area, or daily schedule publicly", cat: "Safety", weight: 3 },
+
+    // Addiction
+    { text: "You check your phone within 5 minutes of waking up", cat: "Addiction", weight: 1 },
+    { text: "You've lost track of time and spent much longer online than intended", cat: "Addiction", weight: 2 },
+    { text: "You feel irritable or restless when you can't use social media", cat: "Addiction", weight: 3 },
+    { text: "You use social media to cope with boredom, loneliness, or stress", cat: "Addiction", weight: 2 },
+
+    // Misinformation
+    { text: "You have shared a story that later turned out to be false", cat: "Misinformation", weight: 1 },
+    { text: "You rarely check sources before sharing or reposting content", cat: "Misinformation", weight: 2 },
+
+    // Cyberbullying
+    { text: "You've received repeated mean, hurtful, or threatening messages online", cat: "Bullying", weight: 3 },
+    { text: "Someone has posted embarrassing content about you without permission", cat: "Bullying", weight: 3 },
+  ];
+
+  const levels = [
+    { max: 5,  label: "You're Doing Well",       color: "var(--accent2)",  desc: "You have few or no significant red flags. Keep practicing good digital habits to stay safe." },
+    { max: 12, label: "Some Areas to Watch",     color: "var(--accent)",   desc: "A few areas could use attention. Review the relevant chapters and consider adjusting your habits." },
+    { max: 22, label: "Several Red Flags",       color: "#e8a03e",         desc: "Multiple warning signs present. We recommend reviewing this manual carefully and implementing the action plans." },
+    { max: 999,label: "High Risk — Take Action", color: "var(--accent3)",  desc: "Significant risk indicators found. Please take the action plans seriously, and consider speaking with a trusted adult or professional." },
+  ];
+
+  const grid = document.getElementById('flagGrid');
+  let scores = new Array(flags.length).fill(false);
+
+  flags.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'flag-item';
+    el.innerHTML = `<div class="flag-checkbox"></div><div><div class="flag-text">${f.text}</div><div class="flag-weight">Category: ${f.cat} · Weight: ${f.weight > 2 ? '🔴' : f.weight > 1 ? '🟡' : '🟢'}</div></div>`;
+    el.addEventListener('click', () => {
+      scores[i] = !scores[i];
+      el.classList.toggle('checked', scores[i]);
+      update();
+    });
+    grid.appendChild(el);
+  });
+
+  function update() {
+    const total = flags.reduce((s, f, i) => s + (scores[i] ? f.weight : 0), 0);
+    const maxPossible = flags.reduce((s, f) => s + f.weight, 0);
+    const pct = Math.min(100, Math.round(total / maxPossible * 100));
+    const level = levels.find(l => total <= l.max);
+
+    document.getElementById('scoreNum').textContent = total;
+    document.getElementById('scoreNum').style.color = level.color;
+    document.getElementById('resultLabel').textContent = level.label;
+    document.getElementById('resultDesc').textContent = level.desc;
+    document.getElementById('resultBar').style.width = pct + '%';
+    document.getElementById('resultBar').style.background = level.color;
+    document.getElementById('calcResult').style.borderColor = level.color;
+  }
+</script>
+
+</body>
+</html>

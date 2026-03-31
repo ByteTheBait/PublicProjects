@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Optical Illusions</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  #canvas-container { width: 100vw; height: 100vh; }
+  #ui {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 16px; pointer-events: none; z-index: 10;
+  }
+  #illusion-menu {
+    display: flex; flex-direction: column; gap: 8px; pointer-events: all;
+  }
+  .illusion-btn {
+    padding: 10px 18px; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(10,10,20,0.8); color: #fff; border-radius: 8px;
+    cursor: pointer; font-size: 13px; backdrop-filter: blur(10px);
+    transition: all 0.2s; text-align: left;
+  }
+  .illusion-btn:hover { background: rgba(80,80,180,0.5); border-color: rgba(150,150,255,0.5); }
+  .illusion-btn.active { background: rgba(80,80,200,0.7); border-color: #8888ff; }
+  #info-panel {
+    max-width: 280px; background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 16px; backdrop-filter: blur(10px); pointer-events: all;
+  }
+  #info-panel h2 { font-size: 15px; margin-bottom: 6px; color: #aac; }
+  #info-panel p { font-size: 12px; color: #889; line-height: 1.5; }
+  #hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(10,10,20,0.85); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 10px 24px; font-size: 12px; color: #889;
+    backdrop-filter: blur(10px);
+  }
+  #reset-btn {
+    position: fixed; bottom: 20px; right: 20px;
+    padding: 10px 18px; background: rgba(80,80,200,0.5);
+    border: 1px solid rgba(150,150,255,0.4); color: #fff;
+    border-radius: 8px; cursor: pointer; font-size: 13px;
+    backdrop-filter: blur(10px);
+  }
+  #reset-btn:hover { background: rgba(80,80,200,0.8); }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+
+<div id="ui">
+  <div id="illusion-menu">
+    <div style="font-size:11px;color:#556;margin-bottom:4px;padding-left:4px;">ILLUSIONS</div>
+    <button class="illusion-btn active" onclick="loadIllusion(0)">🏛️ Penrose Triangle</button>
+    <button class="illusion-btn" onclick="loadIllusion(1)">🪄 Impossible Stairs</button>
+    <button class="illusion-btn" onclick="loadIllusion(2)">👁️ Ames Room</button>
+    <button class="illusion-btn" onclick="loadIllusion(3)">🌀 Floating Cube</button>
+    <button class="illusion-btn" onclick="loadIllusion(4)">🌗 Shadow Paradox</button>
+  </div>
+  <div id="info-panel">
+    <h2 id="illusion-title">Penrose Triangle</h2>
+    <p id="illusion-desc">From the starting angle, this looks like a solid impossible triangle. Orbit around to reveal how the beams are actually disconnected — separated in depth, but aligned to a single viewpoint.</p>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;color:#556;">
+      🖱️ Left drag = orbit &nbsp;|&nbsp; Right drag = pan &nbsp;|&nbsp; Scroll = zoom
+    </div>
+  </div>
+</div>
+
+<div id="hint" id="hint-bar">👁️ Looking from the default angle — orbit to reveal the trick!</div>
+<button id="reset-btn" onclick="resetCamera()">⟳ Reset View</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── Scene Setup ────────────────────────────────────────────────────────────
+const container = document.getElementById('canvas-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+scene.fog = new THREE.Fog(0x0a0a0f, 30, 80);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.01, 200);
+
+// ─── Orbit Controls (manual) ──────────────────────────────────────────────
+let isDragging = false, isRightDrag = false;
+let prevMouse = { x: 0, y: 0 };
+let spherical = { theta: 0, phi: Math.PI / 2.5, radius: 14 };
+let panOffset = new THREE.Vector3();
+let targetSpherical = { theta: 0, phi: Math.PI / 2.5, radius: 14 };
+let targetPan = new THREE.Vector3();
+
+function getIllusionCamera(idx) {
+  const presets = [
+    { theta: -0.52, phi: 1.18, radius: 14, pan: new THREE.Vector3(0,0,0) },  // Penrose
+    { theta: 0.3,  phi: 1.25, radius: 16, pan: new THREE.Vector3(0,0,0) },   // Stairs
+    { theta: 0.0,  phi: 1.57, radius: 18, pan: new THREE.Vector3(0,0,0) },   // Ames
+    { theta: 0.6,  phi: 1.1,  radius: 12, pan: new THREE.Vector3(0,0,0) },   // Float
+    { theta: 0.0,  phi: 1.2,  radius: 14, pan: new THREE.Vector3(0,0,0) },   // Shadow
+  ];
+  return presets[idx] || presets[0];
+}
+
+function resetCamera() {
+  const p = getIllusionCamera(currentIllusion);
+  targetSpherical = { theta: p.theta, phi: p.phi, radius: p.radius };
+  targetPan.copy(p.pan);
+}
+
+container.addEventListener('mousedown', e => {
+  isDragging = true; isRightDrag = e.button === 2;
+  prevMouse = { x: e.clientX, y: e.clientY };
+});
+container.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMouse.x;
+  const dy = e.clientY - prevMouse.y;
+  prevMouse = { x: e.clientX, y: e.clientY };
+  if (isRightDrag) {
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    camera.getWorldDirection(new THREE.Vector3());
+    right.setFromMatrixColumn(camera.matrix, 0);
+    up.setFromMatrixColumn(camera.matrix, 1);
+    targetPan.addScaledVector(right, -dx * 0.02);
+    targetPan.addScaledVector(up, dy * 0.02);
+  } else {
+    targetSpherical.theta -= dx * 0.008;
+    targetSpherical.phi = Math.max(0.05, Math.min(Math.PI - 0.05, targetSpherical.phi + dy * 0.008));
+  }
+});
+container.addEventListener('wheel', e => {
+  targetSpherical.radius = Math.max(3, Math.min(50, targetSpherical.radius + e.deltaY * 0.02));
+});
+
+// Touch support
+let lastTouch = null, lastTouchDist = null;
+container.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { isDragging = true; prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
+  if (e.touches.length === 2) lastTouchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+});
+container.addEventListener('touchend', () => { isDragging = false; lastTouchDist = null; });
+container.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && isDragging) {
+    const dx = e.touches[0].clientX - prevMouse.x, dy = e.touches[0].clientY - prevMouse.y;
+    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    targetSpherical.theta -= dx * 0.008;
+    targetSpherical.phi = Math.max(0.05, Math.min(Math.PI - 0.05, targetSpherical.phi + dy * 0.008));
+  }
+  if (e.touches.length === 2 && lastTouchDist) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    targetSpherical.radius = Math.max(3, Math.min(50, targetSpherical.radius - (d - lastTouchDist) * 0.05));
+    lastTouchDist = d;
+  }
+}, { passive: false });
+
+// ─── Materials ───────────────────────────────────────────────────────────────
+const matMap = {
+  white:  () => new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.1 }),
+  red:    () => new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.4 }),
+  blue:   () => new THREE.MeshStandardMaterial({ color: 0x3366ff, roughness: 0.4 }),
+  gold:   () => new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.3, metalness: 0.4 }),
+  dark:   () => new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.8 }),
+  glow:   (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.6, roughness: 0.2 }),
+  glass:  () => new THREE.MeshStandardMaterial({ color: 0x88aaff, transparent: true, opacity: 0.18, roughness: 0, metalness: 0.9 }),
+  floor:  () => new THREE.MeshStandardMaterial({ color: 0x141420, roughness: 0.9, metalness: 0.05 }),
+};
+
+// ─── Illusion Builders ────────────────────────────────────────────────────
+
+// 1. PENROSE TRIANGLE
+function buildPenrose() {
+  const group = new THREE.Group();
+  const bw = 0.6, bl = 4.5;
+
+  // The trick: beams appear to form a triangle from one angle,
+  // but they're actually offset in Z and don't connect.
+  const beamGeo = new THREE.BoxGeometry(bw, bw, bl);
+
+  // Beam A: horizontal top
+  const beamA = new THREE.Mesh(beamGeo, matMap.red());
+  beamA.position.set(0, 2.1, 0);
+  beamA.castShadow = true;
+  group.add(beamA);
+
+  // Beam B: right descending
+  const beamB = new THREE.Mesh(beamGeo, matMap.blue());
+  beamB.rotation.z = -Math.PI / 3;
+  beamB.position.set(1.95, -0.0, 1.1);
+  beamB.castShadow = true;
+  group.add(beamB);
+
+  // Beam C: left ascending
+  const beamC = new THREE.Mesh(beamGeo, matMap.gold());
+  beamC.rotation.z = Math.PI / 3;
+  beamC.position.set(-1.95, -0.0, -1.1);
+  beamC.castShadow = true;
+  group.add(beamC);
+
+  // Corner caps to sell the illusion
+  const capGeo = new THREE.BoxGeometry(bw * 1.05, bw * 1.05, bw * 1.05);
+
+  const corners = [
+    { pos: [-2.2, -0.95, -1.1], mat: matMap.gold() },
+    { pos: [2.2, -0.95, 1.1],   mat: matMap.blue() },
+    { pos: [0, 2.45, 0],        mat: matMap.red() },
+  ];
+  corners.forEach(c => {
+    const cap = new THREE.Mesh(capGeo, c.mat);
+    cap.position.set(...c.pos);
+    group.add(cap);
+  });
+
+  // Floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), matMap.floor());
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -4;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  addLights(group, [
+    { type: 'ambient', intensity: 0.4 },
+    { type: 'point', pos: [5, 8, 5], intensity: 1.5, color: 0xffffff },
+    { type: 'point', pos: [-5, 4, -5], intensity: 0.6, color: 0x4466ff },
+  ]);
+  return group;
+}
+
+// 2. IMPOSSIBLE STAIRS (Penrose Steps)
+function buildStairs() {
+  const group = new THREE.Group();
+  const stepW = 1.2, stepH = 0.4, stepD = 1.2;
+  const steps = 4;
+  const radius = 3.5;
+
+  // 4 sides, each going "up" by one step, but the 4th loops back to the 1st
+  // The trick is the 4th side is actually shifted WAY down in real space
+  const sideMats = [matMap.red(), matMap.blue(), matMap.gold(), matMap.white()];
+  const angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+
+  const stepsPerSide = 4;
+  const totalSteps = stepsPerSide * 4;
+  const heightPerStep = 0.55;
+
+  for (let s = 0; s < 4; s++) {
+    const angle = angles[s];
+    for (let i = 0; i < stepsPerSide; i++) {
+      const stepIdx = s * stepsPerSide + i;
+      const realH = stepIdx * heightPerStep;
+
+      const geo = new THREE.BoxGeometry(stepW * 1.3, stepH, stepD * 1.3);
+      const mesh = new THREE.Mesh(geo, sideMats[s]);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      const cx = Math.cos(angle) * radius;
+      const cz = Math.sin(angle) * radius;
+      const stepAlong = (i / stepsPerSide - 0.5) * 4;
+      const tx = Math.cos(angle + Math.PI / 2) * stepAlong * 0.7;
+      const tz = Math.sin(angle + Math.PI / 2) * stepAlong * 0.7;
+
+      mesh.position.set(cx + tx, realH, cz + tz);
+      group.add(mesh);
+
+      // railing post
+      const rail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.6, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0x888899, metalness: 0.8, roughness: 0.2 })
+      );
+      rail.position.set(cx + tx, realH + 0.5, cz + tz);
+      group.add(rail);
+    }
+  }
+
+  // Floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), matMap.floor());
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  addLights(group, [
+    { type: 'ambient', intensity: 0.5 },
+    { type: 'directional', pos: [8, 12, 8], intensity: 1.2 },
+    { type: 'point', pos: [0, 8, 0], intensity: 0.8, color: 0xaaccff },
+  ]);
+  return group;
+}
+
+// 3. AMES ROOM
+function buildAmesRoom() {
+  const group = new THREE.Group();
+  // The Ames Room: a trapezoidal room that looks rectangular from one angle.
+  // One corner is far and high, the other is near and low.
+  const roomMat = new THREE.MeshStandardMaterial({ color: 0xddccbb, roughness: 0.9, side: THREE.BackSide });
+  const roomGeo = new THREE.BoxGeometry(10, 6, 14);
+  const room = new THREE.Mesh(roomGeo, roomMat);
+  room.receiveShadow = true;
+  group.add(room);
+
+  // Left figure (far corner — big)
+  const figGeoL = new THREE.CapsuleGeometry ? buildPerson(1.2, 0xee4444) : buildPersonBox(1.2, 0xee4444);
+  figGeoL.position.set(-4, -1.5, -3.5);
+  group.add(figGeoL);
+
+  // Right figure (near corner — small, but appears same size)
+  const figGeoR = buildPerson(0.55, 0x4488ff);
+  figGeoR.position.set(4, -2.2, 3.5);
+  group.add(figGeoR);
+
+  // Checkerboard floor
+  for (let i = -5; i < 5; i++) {
+    for (let j = -7; j < 7; j++) {
+      const tile = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshStandardMaterial({ color: (i + j) % 2 === 0 ? 0xffffff : 0x222222, roughness: 0.8 })
+      );
+      tile.rotation.x = -Math.PI / 2;
+      tile.position.set(i + 0.5, -3, j + 0.5);
+      tile.receiveShadow = true;
+      group.add(tile);
+    }
+  }
+
+  // Window on back wall
+  const winFrame = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 2.5),
+    new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x224488, emissiveIntensity: 0.5, transparent: true, opacity: 0.6 })
+  );
+  winFrame.position.set(0, 0.5, -7);
+  group.add(winFrame);
+
+  addLights(group, [
+    { type: 'ambient', intensity: 0.7 },
+    { type: 'point', pos: [0, 2, -5], intensity: 1.5, color: 0xffeedd },
+    { type: 'point', pos: [0, 2, 5], intensity: 0.5, color: 0x88aaff },
+  ]);
+  return group;
+}
+
+function buildPerson(scale, color) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.5 });
+  // body
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.22 * scale, 0.8 * scale), mat);
+  body.position.y = 0;
+  g.add(body);
+  // head
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2 * scale), mat);
+  head.position.y = 0.65 * scale;
+  g.add(head);
+  // legs
+  [-0.12, 0.12].forEach(ox => {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07 * scale, 0.07 * scale, 0.6 * scale), mat);
+    leg.position.set(ox * scale, -0.7 * scale, 0);
+    g.add(leg);
+  });
+  return g;
+}
+
+// 4. FLOATING / IMPOSSIBLE CUBE
+function buildFloatingCube() {
+  const group = new THREE.Group();
+
+  // A Necker cube made of glowing edges — the face-in-front flips perceptually
+  const edgeLen = 3;
+  const edgeMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, emissive: 0x224466, emissiveIntensity: 0.8, roughness: 0.1, metalness: 0.5 });
+  const edgeGeo = (len) => new THREE.CylinderGeometry(0.06, 0.06, len, 8);
+
+  const verts = [
+    [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1], // back face
+    [-1,-1, 1],[1,-1, 1],[1,1, 1],[-1,1, 1], // front face
+  ].map(v => v.map(x => x * edgeLen / 2));
+
+  const edges = [
+    [0,1],[1,2],[2,3],[3,0], // back
+    [4,5],[5,6],[6,7],[7,4], // front
+    [0,4],[1,5],[2,6],[3,7], // connectors
+  ];
+
+  edges.forEach(([a, b]) => {
+    const va = new THREE.Vector3(...verts[a]);
+    const vb = new THREE.Vector3(...verts[b]);
+    const mid = va.clone().add(vb).multiplyScalar(0.5);
+    const len = va.distanceTo(vb);
+    const edge = new THREE.Mesh(edgeGeo(len), edgeMat.clone());
+    edge.position.copy(mid);
+    edge.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), vb.clone().sub(va).normalize());
+    group.add(edge);
+  });
+
+  // Corner spheres
+  verts.forEach(v => {
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.12), matMap.glow(0x88ccff));
+    sphere.position.set(...v);
+    group.add(sphere);
+  });
+
+  // Impossible shadow: the shadow is "wrong" — casts a different shape
+  const shadowPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 20),
+    new THREE.MeshStandardMaterial({ color: 0x0d0d18, roughness: 1 })
+  );
+  shadowPlane.rotation.x = -Math.PI / 2;
+  shadowPlane.position.y = -3;
+  shadowPlane.receiveShadow = true;
+  group.add(shadowPlane);
+
+  // The shadow is a sphere projected on the floor (wrong shape for a cube)
+  const fakeShadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.5, 32),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 })
+  );
+  fakeShadow.rotation.x = -Math.PI / 2;
+  fakeShadow.position.set(0.5, -2.98, 0.5);
+  group.add(fakeShadow);
+
+  // Spinning inner cube for extra visual confusion
+  const innerGroup = new THREE.Group();
+  const innerCube = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 1.5, 1.5),
+    new THREE.MeshStandardMaterial({ color: 0xff6688, wireframe: true })
+  );
+  innerGroup.add(innerCube);
+  innerGroup.userData.spin = true;
+  group.add(innerGroup);
+
+  addLights(group, [
+    { type: 'ambient', intensity: 0.3 },
+    { type: 'point', pos: [5, 8, 5], intensity: 2, color: 0x88ccff },
+    { type: 'point', pos: [-5, -2, -5], intensity: 0.8, color: 0xff6688 },
+  ]);
+  return group;
+}
+
+// 5. SHADOW PARADOX
+function buildShadowParadox() {
+  const group = new THREE.Group();
+
+  // Cylinders that cast square shadows, and cubes that cast circular shadows
+  // (Achieved with custom emissive "shadow" decals on the floor — physically impossible)
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), matMap.floor());
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -3;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  // CYLINDER → casts SQUARE shadow (fake)
+  const cylMat = new THREE.MeshStandardMaterial({ color: 0xff8844, roughness: 0.4 });
+  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 2.5, 32), cylMat);
+  cyl.position.set(-3, -0.5, 0);
+  cyl.castShadow = true;
+  group.add(cyl);
+
+  // Fake square shadow under cylinder
+  const sqShadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.8, 1.8),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.7 })
+  );
+  sqShadow.rotation.x = -Math.PI / 2;
+  sqShadow.position.set(-3.3, -2.98, 1.4);
+  group.add(sqShadow);
+
+  // CUBE → casts CIRCULAR shadow (fake)
+  const cubeMat = new THREE.MeshStandardMaterial({ color: 0x44aaff, roughness: 0.4 });
+  const cube = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), cubeMat);
+  cube.position.set(3, -1.2, 0);
+  cube.castShadow = true;
+  group.add(cube);
+
+  const circShadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.0, 40),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.7 })
+  );
+  circShadow.rotation.x = -Math.PI / 2;
+  circShadow.position.set(3.3, -2.98, 1.4);
+  group.add(circShadow);
+
+  // SPHERE → casts STAR shadow (fake)
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32),
+    new THREE.MeshStandardMaterial({ color: 0xaaff44, roughness: 0.3, metalness: 0.2 }));
+  sphere.position.set(0, -0.5, -3);
+  group.add(sphere);
+
+  // Star shadow (approximated with merged geometry)
+  const starPoints = 6;
+  const starShape = new THREE.Shape();
+  for (let i = 0; i < starPoints * 2; i++) {
+    const angle = (i / (starPoints * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? 1.2 : 0.5;
+    const x = Math.cos(angle) * r, y = Math.sin(angle) * r;
+    i === 0 ? starShape.moveTo(x, y) : starShape.lineTo(x, y);
+  }
+  starShape.closePath();
+  const starGeo = new THREE.ShapeGeometry(starShape);
+  const starShadow = new THREE.Mesh(starGeo, new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.7 }));
+  starShadow.rotation.x = -Math.PI / 2;
+  starShadow.position.set(0.3, -2.98, -1.5);
+  group.add(starShadow);
+
+  // Labels (floating text via sprites)
+  addFloatingLabel(group, 'CYLINDER → □', -3, 1.5, 0, 0xff8844);
+  addFloatingLabel(group, 'CUBE → ○', 3, 1.5, 0, 0x44aaff);
+  addFloatingLabel(group, 'SPHERE → ★', 0, 1.5, -3, 0xaaff44);
+
+  addLights(group, [
+    { type: 'ambient', intensity: 0.4 },
+    { type: 'spot', pos: [-3, 6, 2], target: [-3, 0, 0], intensity: 2.5, color: 0xffeedd },
+    { type: 'spot', pos: [3, 6, 2], target: [3, 0, 0], intensity: 2.5, color: 0xccddff },
+    { type: 'spot', pos: [0, 6, -3], target: [0, 0, -3], intensity: 2.5, color: 0xddffd0 },
+  ]);
+  return group;
+}
+
+function addFloatingLabel(group, text, x, y, z, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'transparent';
+  ctx.fillRect(0, 0, 256, 64);
+  ctx.font = 'bold 28px monospace';
+  ctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+  ctx.textAlign = 'center';
+  ctx.fillText(text, 128, 42);
+  const tex = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  sprite.position.set(x, y, z);
+  sprite.scale.set(3, 0.75, 1);
+  group.add(sprite);
+}
+
+function addLights(group, lights) {
+  lights.forEach(l => {
+    if (l.type === 'ambient') {
+      group.add(new THREE.AmbientLight(0xffffff, l.intensity));
+    } else if (l.type === 'point') {
+      const pl = new THREE.PointLight(l.color || 0xffffff, l.intensity, 50);
+      pl.position.set(...l.pos);
+      pl.castShadow = true;
+      group.add(pl);
+    } else if (l.type === 'directional') {
+      const dl = new THREE.DirectionalLight(l.color || 0xffffff, l.intensity);
+      dl.position.set(...l.pos);
+      dl.castShadow = true;
+      group.add(dl);
+    } else if (l.type === 'spot') {
+      const sl = new THREE.SpotLight(l.color || 0xffffff, l.intensity, 30, Math.PI / 5, 0.3);
+      sl.position.set(...l.pos);
+      if (l.target) { sl.target.position.set(...l.target); group.add(sl.target); }
+      sl.castShadow = true;
+      group.add(sl);
+    }
+  });
+}
+
+// ─── Illusion Registry ───────────────────────────────────────────────────────
+const illusions = [
+  {
+    build: buildPenrose,
+    title: 'Penrose Triangle',
+    desc: 'From the magic angle, three beams form an impossible closed triangle. Orbit around to reveal they\'re actually offset in depth — never truly connecting. This works in real life! Artists have built physical versions.',
+  },
+  {
+    build: buildStairs,
+    title: 'Penrose Impossible Stairs',
+    desc: 'A staircase that seems to ascend forever. The secret: the 4th side is dropped way down in 3D space but aligns perfectly from the front view. Escher immortalized this in his famous lithograph.',
+  },
+  {
+    build: buildAmesRoom,
+    title: 'Ames Room',
+    desc: 'The room looks perfectly rectangular but is deeply trapezoidal. One corner is much farther away, making people in it appear giant or tiny. Your brain assumes right-angle rooms, so it\'s fooled completely.',
+  },
+  {
+    build: buildFloatingCube,
+    title: 'Necker Cube & Impossible Float',
+    desc: 'A wireframe cube with no depth cues — your brain can\'t decide which face is in front! The shadow below is a circle (impossible for a cube). The inner cube spins in a contradictory direction.',
+  },
+  {
+    build: buildShadowParadox,
+    title: 'Shadow Paradox',
+    desc: 'Objects cast shadows that don\'t match their shape: a cylinder casts a square, a cube casts a circle, a sphere casts a star. Physically impossible — light doesn\'t work this way, which is exactly the point!',
+  },
+];
+
+let currentIllusion = 0;
+let currentGroup = null;
+
+function loadIllusion(idx) {
+  currentIllusion = idx;
+  document.querySelectorAll('.illusion-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.getElementById('illusion-title').textContent = illusions[idx].title;
+  document.getElementById('illusion-desc').textContent = illusions[idx].desc;
+
+  if (currentGroup) scene.remove(currentGroup);
+  currentGroup = illusions[idx].build();
+  scene.add(currentGroup);
+  resetCamera();
+}
+
+// ─── Animation Loop ───────────────────────────────────────────────────────────
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Smooth camera
+  spherical.theta += (targetSpherical.theta - spherical.theta) * 0.08;
+  spherical.phi   += (targetSpherical.phi   - spherical.phi)   * 0.08;
+  spherical.radius+= (targetSpherical.radius- spherical.radius) * 0.08;
+  panOffset.lerp(targetPan, 0.08);
+
+  const x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  const y = spherical.radius * Math.cos(spherical.phi);
+  const z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.position.set(x + panOffset.x, y + panOffset.y, z + panOffset.z);
+  camera.lookAt(panOffset);
+
+  // Spin inner cube for floating cube illusion
+  if (currentGroup) {
+    currentGroup.traverse(obj => {
+      if (obj.userData.spin) { obj.rotation.y = t * 0.8; obj.rotation.x = t * 0.5; }
+    });
+  }
+
+  // Subtle scene pulse
+  scene.fog.near = 28 + Math.sin(t * 0.3) * 2;
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadIllusion(0);
+animate();
+</script>
+</body>
+</html>

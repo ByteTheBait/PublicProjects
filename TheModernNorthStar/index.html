@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Modern North Star</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #0f0c08;
+    --parchment: #f5ead6;
+    --rust: #b84a1e;
+    --gold: #c8922a;
+    --night: #0b1220;
+    --starlight: #e8dfc4;
+    --deep: #1a0f05;
+    --muted: #6b5a42;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--night);
+    color: var(--starlight);
+    font-family: 'Source Serif 4', Georgia, serif;
+    overflow-x: hidden;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    background: var(--night);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    overflow: hidden;
+  }
+
+  .star-field {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 30%, #1a2a4a 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, #1a1a35 0%, transparent 60%),
+                var(--night);
+  }
+
+  .star-field::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,220,0.9) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,220,0.7) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 8%, rgba(255,255,220,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 25%, rgba(255,255,220,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 18%, rgba(255,255,220,0.9) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 35%, rgba(255,255,220,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 60%, rgba(255,255,220,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 75%, rgba(255,255,220,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 62% 55%, rgba(255,255,220,0.6) 0%, transparent 100%),
+      radial-gradient(2px 2px at 78% 65%, rgba(255,255,220,0.9) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 80%, rgba(255,255,220,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 85%, rgba(255,255,220,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 48% 90%, rgba(255,255,220,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 95%, rgba(255,255,220,0.4) 0%, transparent 100%);
+  }
+
+  .north-star {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    color: #fffde0;
+    animation: pulse-star 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(255,253,200,0.9)) drop-shadow(0 0 30px rgba(255,240,100,0.4));
+    z-index: 2;
+  }
+
+  @keyframes pulse-star {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(255,253,200,0.9)) drop-shadow(0 0 30px rgba(255,240,100,0.4)); }
+    50% { opacity: 0.7; filter: drop-shadow(0 0 20px rgba(255,253,200,0.6)) drop-shadow(0 0 50px rgba(255,240,100,0.2)); }
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 800px; }
+
+  .masthead-rule {
+    width: 120px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 1.5rem auto;
+  }
+
+  .episode-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fade-up 0.8s ease 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    color: var(--starlight);
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: fade-up 0.9s ease 0.4s forwards;
+  }
+
+  .hero h1 em {
+    display: block;
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 400;
+    font-size: 0.65em;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(232,223,196,0.75);
+    margin-top: 1.5rem;
+    line-height: 1.7;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0;
+    animation: fade-up 0.9s ease 0.7s forwards;
+  }
+
+  .scroll-cue {
+    position: absolute; bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    opacity: 0;
+    animation: fade-up 1s ease 1.2s forwards;
+  }
+
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scroll-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scroll-pulse {
+    0%, 100% { opacity: 1; transform: scaleY(1); }
+    50% { opacity: 0.4; transform: scaleY(0.7); }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SECTION BASE ─── */
+  section { position: relative; }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  /* ─── INTRO BAND ─── */
+  .intro-band {
+    background: var(--deep);
+    border-top: 1px solid rgba(200,146,42,0.3);
+    border-bottom: 1px solid rgba(200,146,42,0.3);
+    padding: 5rem 2rem;
+  }
+
+  .intro-inner {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .pull-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--starlight);
+    border-left: 3px solid var(--gold);
+    padding-left: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .pull-quote cite {
+    display: block;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin-top: 0.75rem;
+  }
+
+  .intro-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: rgba(232,223,196,0.8);
+  }
+
+  /* ─── NETWORK MAP ─── */
+  .map-section {
+    padding: 6rem 2rem;
+    background: var(--night);
+  }
+
+  .map-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .map-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--starlight);
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: 1fr 64px 1fr;
+    gap: 0;
+    margin-top: 4rem;
+  }
+
+  .col-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .col-1 { text-align: right; }
+  .col-3 { text-align: left; }
+
+  .divider-col {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+  }
+
+  .divider-line {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--gold), rgba(200,146,42,0.1));
+    position: relative;
+  }
+
+  .node {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(200,146,42,0.7);
+    flex-shrink: 0;
+    margin: 0.75rem 0;
+  }
+
+  .entry {
+    padding: 0 1.5rem 3rem;
+  }
+
+  .entry.left { text-align: right; }
+  .entry.right { text-align: left; }
+
+  .entry-era {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--rust);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .entry h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--starlight);
+    margin-bottom: 0.6rem;
+    font-weight: 700;
+  }
+
+  .entry p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: rgba(232,223,196,0.7);
+  }
+
+  .entry-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid rgba(200,146,42,0.4);
+    color: var(--gold);
+    margin-top: 0.75rem;
+  }
+
+  .connector-nodes {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding-top: 2.5rem;
+  }
+
+  /* ─── CONNECTION ESSAY ─── */
+  .essay-section {
+    background: var(--deep);
+    padding: 6rem 2rem;
+    border-top: 1px solid rgba(200,146,42,0.2);
+  }
+
+  .essay-inner {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .essay-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--starlight);
+    margin-bottom: 3rem;
+    line-height: 1.2;
+  }
+
+  .essay-heading span { color: var(--gold); font-style: italic; }
+
+  .interview-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,146,42,0.25);
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+    position: relative;
+  }
+
+  .interview-block::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--gold);
+    opacity: 0.3;
+    position: absolute;
+    top: -0.5rem;
+    left: 1.5rem;
+    line-height: 1;
+  }
+
+  .interview-q {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .interview-a {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--starlight);
+  }
+
+  .interview-source {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: rgba(200,146,42,0.6);
+    margin-top: 1rem;
+  }
+
+  .essay-body {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: rgba(232,223,196,0.78);
+  }
+
+  .essay-body p { margin-bottom: 1.5rem; }
+
+  /* ─── PARALLELS CARDS ─── */
+  .parallels-section {
+    padding: 6rem 2rem;
+    background: var(--night);
+  }
+
+  .parallels-inner { max-width: 1000px; margin: 0 auto; }
+
+  .parallels-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    color: var(--starlight);
+    margin-bottom: 3rem;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    border: 1px solid rgba(200,146,42,0.2);
+    background: rgba(255,255,255,0.02);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .card:hover { border-color: rgba(200,146,42,0.5); }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+
+  .card:hover::after { transform: scaleX(1); }
+
+  .card-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--rust);
+    margin-bottom: 0.5rem;
+  }
+
+  .card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--starlight);
+    margin-bottom: 0.75rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: rgba(232,223,196,0.65);
+  }
+
+  .card-arrow {
+    margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--deep);
+    border-top: 1px solid rgba(200,146,42,0.3);
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+  }
+
+  .footer-star { font-size: 2rem; margin-bottom: 1rem; filter: drop-shadow(0 0 8px rgba(255,253,200,0.8)); }
+
+  .footer-motto {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+  }
+
+  .footer-links {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .footer-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: rgba(200,146,42,0.6);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--gold); }
+
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(232,223,196,0.3);
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(11,18,32,0.95), transparent);
+    backdrop-filter: blur(4px);
+  }
+
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--starlight);
+  }
+
+  .nav-links { display: flex; gap: 2rem; }
+
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232,223,196,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .timeline-grid {
+      grid-template-columns: 1fr;
+    }
+    .divider-col { display: none; }
+    .entry { text-align: left !important; padding: 0 0 2.5rem; }
+    .entry::before {
+      content: '';
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+    .nav-links { display: none; }
+  }
+
+  /* animated underline on section headings */
+  .underline-gold {
+    display: inline-block;
+    position: relative;
+  }
+  .underline-gold::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -6px;
+    width: 100%; height: 2px;
+    background: var(--gold);
+    transform: scaleX(0.35);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .underline-gold:hover::after { transform: scaleX(1); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">The Modern North Star</div>
+  <div class="nav-links">
+    <a href="#network">Network Map</a>
+    <a href="#connection">The Connection</a>
+    <a href="#parallels">Parallels</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="star-field"></div>
+  <div class="north-star">★</div>
+  <div class="hero-content">
+    <div class="episode-tag">Episode One · A Podcast &amp; Digital Archive</div>
+    <h1>
+      The Modern
+      <em>North Star</em>
+    </h1>
+    <div class="masthead-rule"></div>
+    <p class="hero-sub">
+      From secret spirituals and coded newspapers to encrypted apps and satellite networks —
+      the abolitionist spirit never stopped moving.
+    </p>
+  </div>
+  <div class="scroll-cue">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ─── INTRO ─── -->
+<section class="intro-band">
+  <div class="intro-inner">
+    <div class="pull-quote">
+      "Right is of no sex — Truth is of no color — God is the Father of us all,
+      and we are brethren."
+      <cite>— Frederick Douglass, masthead of The North Star, Dec. 3, 1847</cite>
+    </div>
+    <p class="intro-text">
+      In 1847, a formerly enslaved man moved to Rochester, New York — the last stop on the
+      Underground Railroad before Canada — and launched a newspaper named after the star that
+      guided freedom-seekers north through the dark. He called it <em>The North Star</em>.
+      Today, migrants fleeing persecution navigate by a different kind of star: encrypted
+      signals, closed social media groups, and mutual-aid networks that span continents.
+      The technology has changed. The moral stakes have not.
+    </p>
+  </div>
+</section>
+
+<!-- ─── NETWORK MAP ─── -->
+<section class="map-section" id="network">
+  <div class="map-inner">
+    <div class="section-label">Part I · The Network Map</div>
+    <h2 class="map-heading underline-gold">How Freedom Travels</h2>
+    <p style="color:rgba(232,223,196,0.6); font-size:1rem; margin-top:1rem; max-width:560px;">
+      A comparative timeline of communication methods — then and now.
+    </p>
+
+    <div class="timeline-grid">
+      <!-- Headers -->
+      <div class="col-header col-1">1840s – 1865<br>Underground Railroad Era</div>
+      <div class="divider-col">
+        <div class="node" style="margin-top:0"></div>
+      </div>
+      <div class="col-header col-3">2015 – Present<br>Modern Sanctuary Era</div>
+
+      <!-- Row 1 -->
+      <div class="entry left">
+        <div class="entry-era">Covert Newspaper</div>
+        <h3>The North Star</h3>
+        <p>Douglass published his anti-slavery paper from Rochester — the final Underground Railroad depot before Canada — using coded language and abolitionist networks to circulate it among free Black communities and sympathizers.</p>
+        <span class="entry-tag">Print · Coded Language · Abolitionist Press</span>
+      </div>
+      <div class="divider-col">
+        <div class="divider-line" style="height:60px"></div>
+        <div class="node"></div>
+        <div class="divider-line" style="height:60px"></div>
+      </div>
+      <div class="entry right">
+        <div class="entry-era">Digital Platforms</div>
+        <h3>Closed Social Media Networks</h3>
+        <p>Migrants today use private Facebook groups and WhatsApp channels to share safe routes, shelter locations, and legal contacts. Advocates use pseudonyms and closed groups to protect both organizers and the people they serve.</p>
+        <span class="entry-tag">WhatsApp · Facebook · Signal · Pseudonyms</span>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="entry left">
+        <div class="entry-era">Oral / Musical Code</div>
+        <h3>Spirituals &amp; "Follow the Drinking Gourd"</h3>
+        <p>Encoded hymns carried operational intelligence — when to leave, where to go, which rivers to cross. Harriet Tubman used owl calls as safety signals. Songs about "Canaan" meant the free North. Only trusted insiders knew the double meanings.</p>
+        <span class="entry-tag">Spiritual Songs · Coded Lyrics · Signal Calls</span>
+      </div>
+      <div class="divider-col">
+        <div class="divider-line" style="height:60px"></div>
+        <div class="node"></div>
+        <div class="divider-line" style="height:60px"></div>
+      </div>
+      <div class="entry right">
+        <div class="entry-era">Encrypted Messaging</div>
+        <h3>Signal &amp; End-to-End Encryption</h3>
+        <p>Activist groups use Signal to flag ICE enforcement sweeps in real time and coordinate rapid-response demonstrations. In Minneapolis, organizers built "Defrost MN," a crowd-sourced database of ICE vehicle plates, shared through encrypted channels.</p>
+        <span class="entry-tag">Signal · End-to-End Encryption · Real-Time Alerts</span>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="entry left">
+        <div class="entry-era">Railroad Code Language</div>
+        <h3>Passengers, Stations &amp; Conductors</h3>
+        <p>The Railroad used an entire operational vocabulary drawn from rail travel: freedom-seekers were "passengers" or "cargo," safe houses were "stations," helpers were "conductors" and "agents." The Ohio River became the "River Jordan."</p>
+        <span class="entry-tag">Railroad Terminology · Plausible Deniability</span>
+      </div>
+      <div class="divider-col">
+        <div class="divider-line" style="height:60px"></div>
+        <div class="node"></div>
+        <div class="divider-line" style="height:60px"></div>
+      </div>
+      <div class="entry right">
+        <div class="entry-era">Legal Tech Tools</div>
+        <h3>TurnSignl &amp; Know-Your-Rights Apps</h3>
+        <p>Apps like TurnSignl connect people confronted by ICE almost instantly to an immigration attorney, and automatically upload video to cloud storage. The app, born from the 2020 racial justice movement, now has over 285,000 users navigating enforcement encounters.</p>
+        <span class="entry-tag">Legal Access · Cloud Evidence · Instant Counsel</span>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="entry left">
+        <div class="entry-era">Celestial Navigation</div>
+        <h3>The North Star (Polaris)</h3>
+        <p>Escaping enslaved people navigated north by fixing on Polaris — found by following the outer stars of the Big Dipper. This literal guiding light became the metaphor for Douglass's newspaper: accessible truth as the star of hope for millions.</p>
+        <span class="entry-tag">Polaris · Big Dipper · Celestial Wayfinding</span>
+      </div>
+      <div class="divider-col">
+        <div class="divider-line" style="height:60px"></div>
+        <div class="node"></div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="entry right">
+        <div class="entry-era">Digital Navigation</div>
+        <h3>GPS, Satellite &amp; Humanitarian Apps</h3>
+        <p>UNHCR and the Red Cross coordinate with migrants across more than 100 countries via WhatsApp and Facebook Messenger. GPS mapping, while lifesaving, also carries risk — the same tools that guide migrants north can be used by authorities to track them.</p>
+        <span class="entry-tag">GPS · UNHCR · Red Cross · Dual-Use Technology</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── THE CONNECTION ─── -->
+<section class="essay-section" id="connection">
+  <div class="essay-inner">
+    <div class="section-label">Part II · The Connection</div>
+    <h2 class="essay-heading">
+      "How Is Your Work a<br>
+      <span>Continuation of the Abolitionist Spirit?"</span>
+    </h2>
+
+    <div class="essay-body">
+      <p>
+        When Douglass launched <em>The North Star</em>, its masthead proclaimed that
+        truth transcends color and sex — a radical universalism in 1847. The newspaper's
+        purpose was not merely to report on slavery but to make the enslaved visible, to
+        give them a platform, and to build a network of people who could act.
+      </p>
+    </div>
+
+    <div class="interview-block">
+      <div class="interview-q">Q: How is your work a continuation of the abolitionist spirit?</div>
+      <div class="interview-a">
+        "Abolitionists understood that you cannot simply denounce injustice —
+        you have to build the infrastructure of freedom. Safe houses, communication
+        networks, legal support, documentation. We do the same work, with different tools."
+      </div>
+      <div class="interview-source">— Representative, immigrant legal aid network (composite of public mission statements from RAICES, Immigrant Legal Resource Center, and National Immigration Law Center)</div>
+    </div>
+
+    <div class="essay-body">
+      <p>
+        Modern migrant support organizations draw directly from this playbook. Rapid-response
+        legal networks give migrants immediate access to counsel — the equivalent of the
+        Underground Railroad's "station masters" who knew the law and could offer protection.
+        Encrypted networks provide operational security that mirrors the coded spirituals:
+        only trusted insiders understand the full meaning of what is being communicated.
+      </p>
+      <p>
+        The parallel extends to risk. Underground Railroad participants could be prosecuted
+        under the Fugitive Slave Act of 1850. Today, advocates who assist undocumented
+        people face potential federal charges. The threat of legal punishment for offering
+        humanitarian aid is not a new invention — it is a recurring feature of every era in
+        which the law and human dignity have come into conflict.
+      </p>
+
+      <div class="interview-block">
+        <div class="interview-q">On the dual nature of technology</div>
+        <div class="interview-a">
+          "The same digital traces that let us organize and help people also leave them
+          vulnerable to surveillance. We live with that tension every day. Frederick Douglass
+          lived with it too — every issue of <em>The North Star</em> was evidence that could
+          be used against him."
+        </div>
+        <div class="interview-source">— Synthesized from public statements by Migration Policy Institute researchers, 2024</div>
+      </div>
+
+      <p>
+        What unifies all of these efforts across 180 years is the same conviction that
+        animated Douglass: that the condition of being a human being in flight from
+        persecution is a moral claim upon those who are not. The technology changes.
+        The direction — north, toward safety — stays the same.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- ———————————————————_ -->
+<!-- ─── PARALLELS ─── -->
+<section class="parallels-section" id="parallels">
+  <div class="parallels-inner">
+    <div class="section-label">Part III · The Parallels</div>
+    <h2 class="parallels-heading underline-gold">Same Spirit, New Tools</h2>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-year">1847 ↔ 2019</div>
+        <h3>The North Star → Reborn</h3>
+        <p>Douglass's newspaper was relaunched in 2019 with the Douglass family's blessing, explicitly naming the goal of carrying forward abolitionist journalism for a new era of civil rights struggles.</p>
+        <div class="card-arrow">Print → Digital Media</div>
+      </div>
+
+      <div class="card">
+        <div class="card-year">1850 ↔ 2025</div>
+        <h3>Fugitive Slave Act ↔ Enforcement Raids</h3>
+        <p>Both eras feature federal laws that criminalize assistance to people fleeing persecution, and both eras have produced organized networks of citizens willing to break those laws on moral grounds.</p>
+        <div class="card-arrow">Legal Risk → Moral Imperative</div>
+      </div>
+
+      <div class="card">
+        <div class="card-year">1850s ↔ Now</div>
+        <h3>Station Masters ↔ Legal Aid Networks</h3>
+        <p>Underground Railroad station masters provided shelter and legal knowledge. Today's immigrant legal aid organizations provide counsel, documentation, and sanctuary — the same function at scale.</p>
+        <div class="card-arrow">Safe Houses → Legal Corridors</div>
+      </div>
+
+      <div class="card">
+        <div class="card-year">Coded Songs ↔ Signal Groups</div>
+        <h3>Dual-Use Communication</h3>
+        <p>Spirituals appeared innocent to oppressors while carrying operational meaning to freedom-seekers. Encrypted apps similarly allow organizers to communicate freely while maintaining security from authorities.</p>
+        <div class="card-arrow">Double Meaning → End-to-End Encryption</div>
+      </div>
+
+      <div class="card">
+        <div class="card-year">Polaris ↔ GPS</div>
+        <h3>The Guiding Star</h3>
+        <p>Both are navigational tools carrying profound risk: the North Star could be seen by slave catchers too, just as GPS data can be turned against migrants by the authorities they are fleeing.</p>
+        <div class="card-arrow">Celestial → Satellite</div>
+      </div>
+
+      <div class="card">
+        <div class="card-year">1847 Motto ↔ Today</div>
+        <h3>"Truth Is of No Color"</h3>
+        <p>Douglass's radical universalism — that rights belong to all people regardless of race or origin — is the same philosophical foundation on which every modern migrant rights organization is built.</p>
+        <div class="card-arrow">Abolitionism → Human Rights</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-star">★</div>
+  <div class="footer-motto">
+    "Right is of no sex — Truth is of no color — God is the Father of us all."
+  </div>
+  <div class="footer-links">
+    <a href="https://www.loc.gov/collections/frederick-douglass-newspapers/" target="_blank">Douglass Newspapers Archive</a>
+    <a href="https://www.history.com/articles/underground-railroad-secret-codes" target="_blank">Underground Railroad Codes</a>
+    <a href="https://www.migrationpolicy.org/article/digital-technology-refugees" target="_blank">Digital Tech &amp; Refugees</a>
+    <a href="https://www.raicestexas.org" target="_blank">RAICES</a>
+    <a href="https://www.nilc.org" target="_blank">NILC</a>
+  </div>
+  <div class="footer-copy">The Modern North Star · A Digital Archive · 2025</div>
+</footer>
+
+<script>
+  // Intersection Observer for scroll-triggered reveals
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.entry, .card, .interview-block, .pull-quote').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>

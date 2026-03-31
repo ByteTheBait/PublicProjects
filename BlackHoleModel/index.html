@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Hole Research Model</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --deep: #020408;
+    --void: #050b14;
+    --glow-orange: #ff6b1a;
+    --glow-gold: #ffb347;
+    --glow-white: #e8f4ff;
+    --jet-blue: #4fc3f7;
+    --photon: #c8e6c9;
+    --accent: #ff4081;
+    --text: #cfd8dc;
+    --dim: #546e7a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 60px 20px 40px;
+    border-bottom: 1px solid #1a2a3a;
+  }
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.6rem, 5vw, 3.2rem);
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(255,107,26,0.6), 0 0 80px rgba(255,107,26,0.2);
+  }
+  header .subtitle {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+  .driving-q {
+    max-width: 700px;
+    margin: 20px auto 0;
+    font-size: 0.78rem;
+    color: var(--glow-gold);
+    font-style: italic;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(2,4,8,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1a2a3a;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
+    padding: 10px 20px;
+  }
+  nav button {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    background: transparent;
+    border: 1px solid #1e3045;
+    color: var(--dim);
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  nav button:hover, nav button.active {
+    border-color: var(--glow-orange);
+    color: var(--glow-orange);
+    box-shadow: 0 0 12px rgba(255,107,26,0.25);
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    display: none;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+    position: relative; z-index: 5;
+    animation: fadeIn 0.4s ease;
+  }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.1rem, 3vw, 1.8rem);
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255,107,26,0.4);
+  }
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--glow-orange);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .prose {
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
+    max-width: 780px;
+  }
+  .prose p { margin-bottom: 16px; }
+  .prose strong { color: var(--glow-gold); }
+  .prose em { color: var(--photon); }
+
+  .callout {
+    border-left: 3px solid var(--glow-orange);
+    background: rgba(255,107,26,0.05);
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout .label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    color: var(--glow-orange);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ===== 3D BLACK HOLE CANVAS ===== */
+  #bh-canvas-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 40px auto;
+  }
+  #bh-canvas {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+  }
+  .canvas-legend {
+    display: flex; flex-wrap: wrap; gap: 12px 24px;
+    justify-content: center;
+    margin-top: 18px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.68rem; color: var(--dim); letter-spacing: 0.1em;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* ===== CONCEPT CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid #1a2a3a;
+    border-radius: 4px;
+    padding: 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(255,107,26,0.4);
+    box-shadow: 0 0 20px rgba(255,107,26,0.08);
+  }
+  .card-icon { font-size: 1.6rem; margin-bottom: 12px; }
+  .card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    color: var(--glow-gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .card p { font-size: 0.76rem; line-height: 1.8; color: var(--text); }
+
+  /* ===== EVIDENCE DIAGRAM ===== */
+  #evidence-canvas {
+    width: 100%;
+    max-width: 700px;
+    display: block;
+    margin: 32px auto;
+    border-radius: 8px;
+  }
+
+  /* ===== COMPARISON TABLE ===== */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 28px;
+    font-size: 0.75rem;
+  }
+  .compare-table th {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--glow-orange);
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 1px solid #1e3045;
+    text-align: left;
+  }
+  .compare-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #0d1f2d;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .compare-table tr:hover td { background: rgba(255,107,26,0.03); }
+
+  /* ===== ADVANCED SECTION ===== */
+  .adv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 28px;
+  }
+  .adv-card {
+    border: 1px solid #1a2a3a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .adv-header {
+    padding: 14px 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .adv-body { padding: 20px; font-size: 0.76rem; line-height: 1.85; }
+
+  /* ===== RESEARCH Q ===== */
+  .qa-list { margin-top: 24px; }
+  .qa-item {
+    border: 1px solid #1a2a3a;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .qa-q {
+    padding: 14px 20px;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78rem;
+    color: var(--glow-gold);
+    background: rgba(255,179,71,0.04);
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .qa-q:hover { background: rgba(255,179,71,0.08); }
+  .qa-q .arrow { transition: transform 0.3s; font-size: 0.65rem; color: var(--dim); }
+  .qa-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.2s;
+    font-size: 0.76rem;
+    line-height: 1.85;
+    padding: 0 20px;
+    color: var(--text);
+  }
+  .qa-a.open { max-height: 400px; padding: 16px 20px; }
+  .qa-q.open .arrow { transform: rotate(90deg); }
+
+  /* ===== GLOSSARY ===== */
+  .gloss-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .gloss-item {
+    background: rgba(255,255,255,0.015);
+    border: 1px solid #1a2a3a;
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .gloss-term {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    color: var(--jet-blue);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .gloss-def { font-size: 0.74rem; line-height: 1.7; color: var(--text); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.65rem;
+    color: var(--dim);
+    border-top: 1px solid #0d1f2d;
+    letter-spacing: 0.1em;
+    position: relative; z-index: 5;
+  }
+
+  /* ===== CONTROLS ===== */
+  .controls-row {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 10px;
+  }
+  .ctrl-btn {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    background: transparent;
+    border: 1px solid #1e3045;
+    color: var(--dim);
+    padding: 5px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .ctrl-btn:hover, .ctrl-btn.on {
+    border-color: var(--jet-blue);
+    color: var(--jet-blue);
+    box-shadow: 0 0 8px rgba(79,195,247,0.2);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<header>
+  <h1>BLACK HOLE<br>RESEARCH MODEL</h1>
+  <div class="subtitle">Interactive Science Project &nbsp;·&nbsp; Astrophysics</div>
+  <div class="driving-q">"How can something we cannot see be one of the best-tested ideas in modern physics?"</div>
+</header>
+
+<nav id="main-nav">
+  <button class="active" onclick="show('model')">3D Model</button>
+  <button onclick="show('what')">What Is It</button>
+  <button onclick="show('form')">Formation</button>
+  <button onclick="show('horizon')">Event Horizon</button>
+  <button onclick="show('detect')">Detection</button>
+  <button onclick="show('concepts')">Key Concepts</button>
+  <button onclick="show('advanced')">Advanced Topics</button>
+  <button onclick="show('evidence')">Evidence Diagram</button>
+  <button onclick="show('questions')">Research Q&A</button>
+  <button onclick="show('glossary')">Glossary</button>
+</nav>
+
+<!-- ======================================================= SECTION: MODEL -->
+<section id="s-model" class="section active">
+  <div class="section-label">Required Element 1</div>
+  <h2 class="section-title">Black Hole Structure: 3D Diagram</h2>
+
+  <div class="controls-row">
+    <span style="font-size:0.65rem;color:var(--dim);letter-spacing:0.1em">TOGGLE LABELS:</span>
+    <button class="ctrl-btn on" id="btn-labels" onclick="toggleLayer('labels')">Labels</button>
+    <button class="ctrl-btn on" id="btn-jets" onclick="toggleLayer('jets')">Jets</button>
+    <button class="ctrl-btn on" id="btn-photon" onclick="toggleLayer('photon')">Photon Sphere</button>
+    <button class="ctrl-btn on" id="btn-disk" onclick="toggleLayer('disk')">Accretion Disk</button>
+  </div>
+
+  <div id="bh-canvas-wrap">
+    <canvas id="bh-canvas" width="700" height="500"></canvas>
+  </div>
+
+  <div class="canvas-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#000;border:1px solid #fff"></div>Singularity</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.6)"></div>Event Horizon</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c8e6c9"></div>Photon Sphere</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6b1a"></div>Accretion Disk</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7"></div>Relativistic Jets</div>
+  </div>
+
+  <div class="callout" style="margin-top:32px">
+    <div class="label">How to read this diagram</div>
+    The central black sphere is the <strong>event horizon</strong>, which marks the point of no return. The glowing orange ring is the <strong>accretion disk</strong> of superheated gas spiraling inward. The green ring is the <strong>photon sphere</strong> where light orbits. The blue beams are <strong>relativistic jets</strong> of plasma ejected along the poles.
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: WHAT -->
+<section id="s-what" class="section">
+  <div class="section-label">Section 1</div>
+  <h2 class="section-title">What a Black Hole Is, and What It Is Not</h2>
+  <div class="prose">
+    <p>A <strong>black hole</strong> is a region of spacetime where gravity is so extreme that nothing, not even light, can escape once it crosses the boundary called the <em>event horizon</em>. It is defined not by what fills it, but by what happens to spacetime near a collapsed mass.</p>
+    <p>The simplest scientific definition: <strong>a black hole is a region from which the escape velocity exceeds the speed of light.</strong> Because nothing travels faster than light, nothing escapes.</p>
+    <p>Black holes are <em>not</em> cosmic vacuum cleaners. They don't suck in distant matter any more than the Sun does. If our Sun were replaced by a black hole of equal mass, Earth's orbit would be unchanged and we'd simply lose sunlight. Black holes are also not holes in the universe; they are massive, dense objects predicted by Einstein's general relativity.</p>
+  </div>
+  <div class="callout">
+    <div class="label">Cannot escape ≠ Cannot be seen</div>
+    A black hole cannot emit or reflect light, but we <em>can</em> see the matter and light around it. Infalling gas heats to millions of degrees and glows brilliantly. This is why the Event Horizon Telescope photographed the <strong>shadow</strong> of M87*: not the hole itself, but the glowing ring of matter surrounding it.
+  </div>
+  <div class="prose">
+    <p><strong>Event horizon vs. singularity:</strong> The event horizon is a mathematical surface, not a physical wall. An astronaut falling in would notice nothing unusual as they cross it (though they could never return). The singularity, at the center, is where current physics breaks down: density becomes theoretically infinite, and our equations fail. Most physicists believe a more complete theory (like quantum gravity) will eventually replace the singularity concept.</p>
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: FORM -->
+<section id="s-form" class="section">
+  <div class="section-label">Section 2</div>
+  <h2 class="section-title">How Black Holes Form</h2>
+  <div class="prose">
+    <p>Stars are a balance between two opposing forces: the <strong>outward pressure of nuclear fusion</strong> and the <strong>inward pull of gravity</strong>. For most of a star's life, these forces are in equilibrium. When the nuclear fuel runs out, gravity wins.</p>
+    <p><strong>Stellar-mass black holes (3–100 solar masses)</strong> form when massive stars, specifically those at least 20× the mass of our Sun, exhaust their fuel and collapse. The outer layers rebound in a spectacular <em>supernova explosion</em>; the core implodes into a black hole in milliseconds.</p>
+    <p><strong>Supermassive black holes (millions to billions of solar masses)</strong> exist at the centers of nearly all large galaxies. Their origin is less certain; they may grow by consuming gas and merging with other black holes over billions of years, or form from enormous gas clouds in the early universe.</p>
+    <p><strong>Intermediate-mass black holes</strong> (hundreds to thousands of solar masses) are the missing link: rare and recently confirmed, possibly formed in dense star clusters.</p>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">⭐</div>
+      <h3>Stellar Collapse</h3>
+      <p>A star ≥20 M☉ fuses elements until it reaches iron. Iron fusion absorbs energy rather than releasing it. Fusion halts, gravity crushes the core, and a supernova + black hole result.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌌</div>
+      <h3>Supermassive Growth</h3>
+      <p>Galactic centers host black holes with masses up to 40 billion M☉. Sagittarius A*, at our galaxy's center, has a mass of ~4 million suns and was confirmed with the 2020 Nobel Prize in Physics.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💥</div>
+      <h3>Mergers</h3>
+      <p>Two black holes can spiral together and merge, radiating immense energy as gravitational waves first detected by LIGO in 2015, confirming a century-old prediction by Einstein.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: HORIZON -->
+<section id="s-horizon" class="section">
+  <div class="section-label">Section 3</div>
+  <h2 class="section-title">The Event Horizon &amp; What It Means</h2>
+  <div class="prose">
+    <p>The <strong>event horizon</strong> is the boundary where the escape velocity equals exactly the speed of light, making it the absolute point of no return around a black hole. It is a one-way membrane in spacetime, not a physical surface or wall.</p>
+    <p>For a non-rotating (Schwarzschild) black hole, the event horizon is a sphere described by the <strong>Schwarzschild radius</strong>: <em>r<sub>s</sub> = 2GM/c²</em>. For our Sun, this would be about 3 km. Earth's entire mass would collapse to roughly the size of a marble.</p>
+    <p><strong>Why the event horizon is not a physical surface:</strong> There is no material there. It is defined entirely by geometry, specifically by what spacetime does to paths through it. A falling astronaut would experience nothing unusual passing through it. Outside observers, however, would never see them cross, because extreme time dilation causes the astronaut to appear to freeze and fade at the horizon.</p>
+  </div>
+  <div class="callout">
+    <div class="label">Time Dilation Near the Event Horizon</div>
+    General relativity predicts that time runs slower in stronger gravitational fields. Near the event horizon, an outside observer watching a clock fall in would see it tick slower and slower, asymptotically approaching the horizon yet never quite reaching it. Meanwhile, the falling clock experiences normal time. This is <strong>gravitational time dilation</strong> and has been measured even near Earth's surface (GPS satellites must account for it).
+  </div>
+  <div class="prose">
+    <p><strong>Inside the event horizon:</strong> All paths through spacetime, including those of light, point toward the singularity. Escape becomes as impossible as traveling backward in time. The singularity is not a place in space; it is a moment in the future of anything inside the horizon.</p>
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: DETECT -->
+<section id="s-detect" class="section">
+  <div class="section-label">Section 4</div>
+  <h2 class="section-title">How Scientists Detect Black Holes</h2>
+  <div class="prose">
+    <p>Black holes cannot be seen directly, yet their gravitational influence on surrounding matter and spacetime is unmistakable. Scientists use at least five distinct detection methods.</p>
+  </div>
+  <table class="compare-table">
+    <tr>
+      <th>Method</th><th>How it Works</th><th>Example</th>
+    </tr>
+    <tr>
+      <td><strong>Stellar Orbits</strong></td>
+      <td>Stars near a galactic center orbit something massive and invisible. By tracking their paths over years, astronomers calculate the central mass.</td>
+      <td>Stars orbiting Sgr A* at speeds up to 3% the speed of light confirmed a 4-million-solar-mass black hole (Nobel Prize 2020)</td>
+    </tr>
+    <tr>
+      <td><strong>X-ray Binaries</strong></td>
+      <td>Gas stolen from a companion star forms an accretion disk that heats to millions of degrees, glowing in X-rays detectable by space telescopes.</td>
+      <td>Cygnus X-1, the first strong black hole candidate, discovered in 1964</td>
+    </tr>
+    <tr>
+      <td><strong>Gravitational Waves</strong></td>
+      <td>Merging black holes ripple spacetime itself. LIGO detects distortions smaller than 1/1000th the diameter of a proton.</td>
+      <td>GW150914 (2015), the first direct detection of two ~30 M☉ black holes merging</td>
+    </tr>
+    <tr>
+      <td><strong>Gravitational Lensing</strong></td>
+      <td>A black hole's gravity bends light from objects behind it, creating arcs, rings (Einstein rings), or multiple images of the same source.</td>
+      <td>Hubble Space Telescope images show lensing arcs around galaxy clusters</td>
+    </tr>
+    <tr>
+      <td><strong>Event Horizon Imaging</strong></td>
+      <td>The Event Horizon Telescope (EHT) is a planet-sized radio array that images the photon ring and shadow of supermassive black holes.</td>
+      <td>M87* image (2019) and Sgr A* image (2022)</td>
+    </tr>
+  </table>
+  <div class="callout" style="margin-top:28px">
+    <div class="label">What Would Count as Evidence AGAINST a Black Hole?</div>
+    If "orbiting" stars showed non-Keplerian paths inconsistent with a point mass, if X-ray emission showed a hard surface (a neutron star would show specific bursts a black hole cannot), or if gravitational wave signatures matched compact objects other than black holes, any of these results would challenge the black hole interpretation.
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: CONCEPTS -->
+<section id="s-concepts" class="section">
+  <div class="section-label">Key Concepts</div>
+  <h2 class="section-title">Gravity, Escape Velocity &amp; Core Physics</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Escape Velocity</h3>
+      <p>The speed needed to escape a gravitational field without further propulsion. Earth's escape velocity is ~11.2 km/s. At the event horizon of a black hole, escape velocity reaches c (299,792 km/s), the speed of light. Nothing can go faster, so nothing escapes.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🍝</div>
+      <h3>Spaghettification</h3>
+      <p>Tidal forces stretch infalling matter into long, thin strands. The side of your body closer to the black hole is pulled harder than the far side. Near a stellar-mass hole this is fatal before the horizon; near a supermassive hole, tidal forces at the horizon may be gentle enough to survive (briefly).</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔥</div>
+      <h3>Accretion Disks &amp; Why They Glow</h3>
+      <p>Gas spiraling in forms a disk. Friction and compression heat it to millions of Kelvin, which is hot enough to radiate X-rays. This is why we "see" black holes: not the hole itself, but the brilliantly glowing disk around it. Quasars, the most luminous objects in the universe, are powered by accretion.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚖️</div>
+      <h3>Event Horizon vs. Singularity</h3>
+      <p>The event horizon is a boundary in spacetime that is mathematical and invisible, with no special local physics. The singularity is the theoretical point of infinite density at the center, where general relativity breaks down. Physicists expect quantum gravity to replace the singularity with something finite.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📏</div>
+      <h3>Stellar-mass vs. Supermassive</h3>
+      <p>Stellar-mass: 3–100 M☉, formed from collapsed stars, found throughout galaxies. Supermassive: millions to billions of M☉, one per large galaxy, dominating the galactic center. The difference in tidal forces is dramatic. A stellar-mass hole spaghettifies you far outside its horizon, whereas a supermassive one may not, even at the horizon.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌀</div>
+      <h3>Relativistic Jets</h3>
+      <p>Some accreting black holes launch twin jets of plasma near the speed of light along their rotation axis. Powered by magnetic fields threading the accretion disk and the black hole's spin (Blandford-Znajek process), jets can extend millions of light-years and are visible in radio waves.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: ADVANCED -->
+<section id="s-advanced" class="section">
+  <div class="section-label">Advanced Topics (All Five)</div>
+  <h2 class="section-title">Beyond the Basics</h2>
+  <div class="adv-grid">
+    <div class="adv-card">
+      <div class="adv-header" style="background:rgba(255,64,129,0.12);color:#ff4081">01: Hawking Radiation</div>
+      <div class="adv-body">
+        <p>In 1974, Stephen Hawking showed that quantum mechanics near the event horizon causes black holes to slowly emit thermal radiation. Virtual particle-antiparticle pairs form near the horizon; one falls in and one escapes, causing the black hole to lose mass. For stellar-mass black holes, the temperature is ~60 nanokelvins, far too cold to detect yet. But given enough time (10⁶⁷ years for a solar-mass black hole), they would fully evaporate. Hawking radiation remains undetected but is mathematically robust and widely accepted.</p>
+      </div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-header" style="background:rgba(79,195,247,0.1);color:#4fc3f7">02: Gravitational Waves &amp; LIGO</div>
+      <div class="adv-body">
+        <p>Einstein predicted in 1916 that accelerating masses ripple spacetime like waves on a pond. LIGO (Laser Interferometer Gravitational-Wave Observatory) uses 4-km laser arms to detect length changes of 10⁻¹⁸ m, which is smaller than a proton. In 2015, it heard GW150914: two black holes (~29 and ~36 M☉) merging 1.3 billion light-years away. The entire merger converted ~3 solar masses into gravitational wave energy in 0.2 seconds, briefly outshining all stars in the observable universe combined.</p>
+      </div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-header" style="background:rgba(200,230,201,0.1);color:#c8e6c9">03: Information Paradox</div>
+      <div class="adv-body">
+        <p>Quantum mechanics says information is never truly destroyed. But if a black hole evaporates via Hawking radiation, which appears perfectly thermal and random, where does the information about infalling matter go? This is the black hole information paradox. Leading candidates suggest information is encoded in subtle correlations in Hawking radiation (Hawking-Perry-Strominger soft hair), or it escapes through a firewall at the horizon. The problem was partially resolved in 2019 for certain cases using the "island formula," making it an active research frontier.</p>
+      </div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-header" style="background:rgba(255,179,71,0.1);color:#ffb347">04: Time Dilation</div>
+      <div class="adv-body">
+        <p>General relativity predicts time runs slower in stronger gravitational fields. Near a black hole's event horizon, time dilation becomes extreme: an outside observer sees a falling clock slow to a stop and redshift to black. The infalling observer feels nothing unusual. This effect is real and measured: GPS satellites at lower gravity tick faster and must be corrected by 45 microseconds/day. Near a black hole, the effect is billions of times stronger. The film Interstellar depicted this accurately: 1 hour on a planet near Gargantua = 7 years on Earth.</p>
+      </div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-header" style="background:rgba(100,181,246,0.1);color:#64b5f6">05: Photon Sphere &amp; EHT Shadow</div>
+      <div class="adv-body">
+        <p>At 1.5× the Schwarzschild radius, light can orbit a black hole in unstable circles; this region is called the <em>photon sphere</em>. Light rays passing through this region get lensed into rings visible in the EHT images. The Event Horizon Telescope is a planet-sized interferometer using radio telescopes from Hawaii to Antarctica, achieving angular resolution equivalent to reading a newspaper in New York from Paris. The M87* image (2019) showed a bright asymmetric ring (brighter at the bottom due to Doppler boosting) with a dark central shadow ~2.6× the event horizon size.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: EVIDENCE -->
+<section id="s-evidence" class="section">
+  <div class="section-label">Required Element 2</div>
+  <h2 class="section-title">Evidence Diagram: Four Detection Methods</h2>
+  <canvas id="evidence-canvas" width="700" height="480"></canvas>
+  <div class="callout" style="margin-top:20px">
+    <div class="label">Reading the Evidence Diagram</div>
+    The four panels show: (1) <strong>Gravitational Lensing</strong>, where light bends around a black hole to create rings and arcs; (2) <strong>Stellar Orbits</strong>, where stars trace ellipses around an invisible central mass; (3) <strong>Accretion Disk Radiation</strong>, showing X-ray/radio emission from infalling superheated gas; and (4) <strong>Gravitational Waves</strong>, the spacetime ripples from merging black holes detected by LIGO.
+  </div>
+</section>
+
+<!-- ======================================================= SECTION: Q&A -->
+<section id="s-questions" class="section">
+  <div class="section-label">Research Questions</div>
+  <h2 class="section-title">Core &amp; Evidence Questions</h2>
+  <div class="qa-list" id="qa-list"></div>
+</section>
+
+<!-- ======================================================= SECTION: GLOSSARY -->
+<section id="s-glossary" class="section">
+  <div class="section-label">Reference</div>
+  <h2 class="section-title">Glossary of Terms</h2>
+  <div class="gloss-grid" id="gloss-grid"></div>
+</section>
+
+<footer>
+  Black Hole Research Project &nbsp;·&nbsp; Interactive Model &nbsp;·&nbsp; All diagrams rendered in HTML5 Canvas
+</footer>
+
+<script>
+// ======== STARFIELD ========
+(function(){
+  const c = document.getElementById('stars');
+  const ctx = c.getContext('2d');
+  let W, H, stars=[];
+  function resize(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
+  function makeStars(){
+    stars=[];
+    for(let i=0;i<320;i++){
+      stars.push({x:Math.random()*W, y:Math.random()*H,
+        r:Math.random()*1.2, a:Math.random(), da:(Math.random()-0.5)*0.003});
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+      s.a+=s.da; if(s.a<0.1||s.a>1){s.da*=-1;}
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,220,255,${s.a*0.7})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',()=>{resize();makeStars();});
+  resize(); makeStars(); draw();
+})();
+
+// ======== NAV ========
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  const idx = ['model','what','form','horizon','detect','concepts','advanced','evidence','questions','glossary'].indexOf(id);
+  document.querySelectorAll('nav button')[idx].classList.add('active');
+  if(id==='model') requestAnimationFrame(drawBH);
+  if(id==='evidence') requestAnimationFrame(drawEvidence);
+}
+
+// ======== BLACK HOLE 3D CANVAS ========
+const BH = (function(){
+  let layers = {labels:true, jets:true, photon:true, disk:true};
+  let t=0, raf=null;
+
+  // --- rotation state ---
+  // rotY: azimuthal spin (left/right drag), range 0..2π
+  // tiltX: polar tilt (up/down drag), range -π/2..π/2
+  let rotY = 0;          // auto-spin offset accumulated here too
+  let tiltX = 0.38;      // default: ~22° above equator
+  let autoSpin = true;
+  let dragging = false;
+  let lastMX = 0, lastMY = 0;
+  let velY = 0, velX = 0; // momentum
+
+  function setupDrag(){
+    const canvas = document.getElementById('bh-canvas');
+    if(!canvas) return;
+
+    function onDown(e){
+      dragging = true;
+      autoSpin = false;
+      velY = 0; velX = 0;
+      const p = e.touches ? e.touches[0] : e;
+      lastMX = p.clientX; lastMY = p.clientY;
+      canvas.style.cursor = 'grabbing';
+    }
+    function onMove(e){
+      if(!dragging) return;
+      e.preventDefault();
+      const p = e.touches ? e.touches[0] : e;
+      const dx = p.clientX - lastMX;
+      const dy = p.clientY - lastMY;
+      velY = dx * 0.012;
+      velX = dy * 0.010;
+      rotY  += velY;
+      tiltX += velX;
+      tiltX = Math.max(-Math.PI/2 + 0.05, Math.min(Math.PI/2 - 0.05, tiltX));
+      lastMX = p.clientX; lastMY = p.clientY;
+    }
+    function onUp(){
+      dragging = false;
+      canvas.style.cursor = 'grab';
+      // momentum coast
+    }
+
+    canvas.addEventListener('mousedown',  onDown);
+    canvas.addEventListener('mousemove',  onMove);
+    canvas.addEventListener('mouseup',    onUp);
+    canvas.addEventListener('mouseleave', onUp);
+    canvas.addEventListener('touchstart', onDown, {passive:false});
+    canvas.addEventListener('touchmove',  onMove, {passive:false});
+    canvas.addEventListener('touchend',   onUp);
+    canvas.style.cursor = 'grab';
+  }
+
+  function draw(){
+    const canvas = document.getElementById('bh-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W=canvas.width, H=canvas.height;
+    const cx=W/2, cy=H/2;
+    t += 0.012;
+
+    // auto-spin when not dragging
+    if(!dragging){
+      if(autoSpin){
+        rotY += 0.012;
+      } else {
+        // momentum decay
+        velY *= 0.94; velX *= 0.94;
+        rotY  += velY;
+        tiltX += velX;
+        tiltX = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, tiltX));
+        if(Math.abs(velY)<0.0003 && Math.abs(velX)<0.0003) autoSpin = true;
+      }
+    }
+
+    // derived geometry from tilt
+    // diskRatio: how squished the ellipse looks (0=edge-on, 1=face-on)
+    const diskRatio = Math.abs(Math.sin(tiltX));
+    // jetLen: jets are vertical in 3D, projected by cos(tiltX)
+    const jetCos   = Math.cos(tiltX);
+    // jetSign: which end of jet goes "up" on screen
+    const jetSign  = tiltX >= 0 ? 1 : -1;
+
+    ctx.clearRect(0,0,W,H);
+
+    // background glow
+    const bg = ctx.createRadialGradient(cx,cy,0,cx,cy,280);
+    bg.addColorStop(0,'rgba(20,10,5,1)');
+    bg.addColorStop(0.5,'rgba(8,4,2,1)');
+    bg.addColorStop(1,'rgba(2,4,8,1)');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    // outer glow
+    const og = ctx.createRadialGradient(cx,cy,60,cx,cy,200);
+    og.addColorStop(0,'rgba(255,100,20,0.18)');
+    og.addColorStop(0.5,'rgba(255,60,10,0.06)');
+    og.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=og; ctx.fillRect(0,0,W,H);
+
+    // ---- helper: draw one disk ring ----
+    // ry_scale controls how squished it looks from this tilt
+    function diskRing(ri, strokeStyle, lineWidth){
+      ctx.beginPath();
+      ctx.ellipse(0, 0, ri, ri * diskRatio * 0.28 + 0.5, 0, 0, Math.PI*2);
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth   = lineWidth;
+      ctx.stroke();
+    }
+
+    // accretion disk (back half — below black sphere)
+    if(layers.disk){
+      ctx.save();
+      ctx.translate(cx,cy);
+      // clip to upper half so back disk peeks behind the sphere
+      ctx.save();
+      ctx.beginPath(); ctx.rect(-W, -H, W*2, H);
+      ctx.clip();
+      for(let ring=0; ring<28; ring++){
+        const ri = 78 + ring*5.5;
+        const bright = Math.max(0, 1 - ring/28);
+        const wobble = Math.sin(t*1.2 + ring*0.4)*0.06;
+        const col = ring < 10
+          ? `rgba(255,${180+ring*5},${ring*8},${bright*0.82+wobble})`
+          : `rgba(255,${100+ring*4},0,${bright*0.5+wobble})`;
+        diskRing(ri, col, ring<8?3.5:ring<18?2:1);
+      }
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // jets — extend along tilted axis
+    if(layers.jets){
+      ctx.save();
+      ctx.translate(cx,cy);
+      for(let side of [-1,1]){
+        const jDir = side * jetSign; // +1 goes up, -1 goes down on screen
+        const jLen = 155 * Math.abs(jetCos);
+        for(let j=0;j<5;j++){
+          const jw = 4 + j*2;
+          const jh = (160 + j*8) * Math.abs(jetCos);
+          const jg = ctx.createLinearGradient(0,0,0, -jDir*jh);
+          jg.addColorStop(0,'rgba(79,195,247,0.55)');
+          jg.addColorStop(1,'rgba(79,195,247,0)');
+          ctx.beginPath();
+          ctx.moveTo(-jw, 0);
+          ctx.lineTo(jw, 0);
+          ctx.lineTo(jw*0.25, -jDir*jh);
+          ctx.lineTo(-jw*0.25, -jDir*jh);
+          ctx.closePath();
+          ctx.fillStyle=jg;
+          ctx.globalAlpha=1-j*0.15;
+          ctx.fill();
+        }
+        for(let d=0;d<6;d++){
+          const frac = ((t*0.4 + d/6) % 1);
+          const dy = -jDir * frac * jLen;
+          const da = Math.sin(frac*Math.PI)*0.9;
+          ctx.beginPath();
+          ctx.arc(0, dy, 2.5, 0, Math.PI*2);
+          ctx.fillStyle=`rgba(180,230,255,${da})`;
+          ctx.globalAlpha=1;
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    // photon sphere (tilted ellipse)
+    if(layers.photon){
+      ctx.save();
+      ctx.translate(cx,cy);
+      const phaseOff = Math.sin(t*0.5)*0.04;
+      ctx.beginPath();
+      ctx.ellipse(0,0, 94, 94 * diskRatio * 0.28 + 1, 0, 0, Math.PI*2);
+      ctx.strokeStyle=`rgba(200,255,200,${0.55+phaseOff})`;
+      ctx.lineWidth=1.5;
+      ctx.setLineDash([4,6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // black hole sphere (always a circle)
+    ctx.save();
+    ctx.translate(cx,cy);
+    const lensG = ctx.createRadialGradient(0,0,54,0,0,90);
+    lensG.addColorStop(0,'rgba(0,0,0,1)');
+    lensG.addColorStop(0.7,'rgba(0,0,0,0.85)');
+    lensG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(0,0,90,0,Math.PI*2);
+    ctx.fillStyle=lensG; ctx.fill();
+
+    ctx.beginPath(); ctx.arc(0,0,62,0,Math.PI*2);
+    ctx.fillStyle='#000'; ctx.fill();
+    ctx.beginPath(); ctx.arc(0,0,62,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,255,255,${0.22+Math.sin(t*1.5)*0.05})`;
+    ctx.lineWidth=1.5; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2);
+    const sg = ctx.createRadialGradient(0,0,0,0,0,4);
+    sg.addColorStop(0,'rgba(255,255,255,0.5)');
+    sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.fill();
+    ctx.restore();
+
+    // accretion disk front (on top of sphere)
+    if(layers.disk){
+      ctx.save();
+      ctx.translate(cx,cy);
+      // clip to lower half
+      ctx.save();
+      ctx.beginPath(); ctx.rect(-W, 0, W*2, H);
+      ctx.clip();
+      for(let ring=0; ring<12; ring++){
+        const ri = 78 + ring*5.5;
+        const bright = Math.max(0, 1 - ring/28) * 0.85;
+        const wobble = Math.sin(t*1.2 + ring*0.4)*0.06;
+        const col = ring < 5
+          ? `rgba(255,${180+ring*6},${ring*10},${bright+wobble})`
+          : `rgba(255,${130+ring*4},0,${bright*0.7+wobble})`;
+        diskRing(ri, col, ring<5?3.5:ring<10?2.5:1.5);
+      }
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // labels
+    if(layers.labels){
+      ctx.font='bold 11px "Space Mono", monospace';
+      const jetLabelY = cy - Math.abs(jetCos)*95;
+      const ldata = [
+        {x:cx+100, y:jetLabelY,  label:'RELATIVISTIC JETS',  color:'#4fc3f7'},
+        {x:cx+175, y:cy-18,      label:'ACCRETION DISK',      color:'#ff8c42'},
+        {x:cx+105, y:cy-8,       label:'PHOTON SPHERE',       color:'#c8e6c9'},
+        {x:cx+80,  y:cy+30,      label:'EVENT HORIZON',       color:'rgba(255,255,255,0.75)'},
+        {x:cx-5,   y:cy+8,       label:'SINGULARITY',         color:'rgba(255,255,255,0.4)'},
+      ];
+      ldata.forEach(l=>{
+        ctx.fillStyle=l.color;
+        ctx.fillText(l.label, l.x, l.y);
+        ctx.beginPath();
+        ctx.moveTo(l.x-4,l.y-4);
+        ctx.lineTo(cx+(l.x<cx?62:-62)*0.65, cy+(l.y<cy?-1:1)*12);
+        ctx.strokeStyle=l.color+'60';
+        ctx.lineWidth=0.8;
+        ctx.stroke();
+      });
+    }
+
+    // drag hint (fades after first interaction)
+    if(autoSpin){
+      ctx.save();
+      ctx.font='10px "Space Mono",monospace';
+      ctx.fillStyle='rgba(84,110,122,0.7)';
+      ctx.textAlign='center';
+      ctx.fillText('drag to rotate', cx, H-14);
+      ctx.textAlign='left';
+      ctx.restore();
+    }
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  return {
+    start(){
+      if(!raf){
+        setupDrag();
+        draw();
+      }
+    },
+    stop(){ if(raf){ cancelAnimationFrame(raf); raf=null; } },
+    toggleLayer(name){ layers[name]=!layers[name]; }
+  };
+})();
+
+function toggleLayer(name){
+  BH.toggleLayer(name);
+  const btn = document.getElementById('btn-'+name);
+  btn.classList.toggle('on');
+}
+
+function drawBH(){ BH.start(); }
+BH.start();
+
+// stop animation when not visible
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) BH.stop(); else if(document.getElementById('s-model').classList.contains('active')) BH.start();
+});
+
+// ======== EVIDENCE DIAGRAM ========
+function drawEvidence(){
+  const canvas = document.getElementById('evidence-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // background
+  ctx.fillStyle='#030a12'; ctx.fillRect(0,0,W,H);
+
+  // grid lines
+  ctx.strokeStyle='#0d1f2d'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+
+  const panels=[
+    {x:0,y:0,w:W/2,h:H/2,draw:drawLensing,label:'1. GRAVITATIONAL LENSING'},
+    {x:W/2,y:0,w:W/2,h:H/2,draw:drawOrbits,label:'2. STELLAR ORBITS'},
+    {x:0,y:H/2,w:W/2,h:H/2,draw:drawAccretion,label:'3. ACCRETION DISK RADIATION'},
+    {x:W/2,y:H/2,w:W/2,h:H/2,draw:drawGW,label:'4. GRAVITATIONAL WAVES'},
+  ];
+
+  panels.forEach(p=>{
+    ctx.save();
+    ctx.rect(p.x,p.y,p.w,p.h);
+    ctx.clip();
+    p.draw(ctx,p.x,p.y,p.w,p.h);
+    ctx.font='bold 9px "Orbitron", monospace';
+    ctx.fillStyle='rgba(255,255,255,0.45)';
+    ctx.fillText(p.label, p.x+12, p.y+18);
+    ctx.restore();
+  });
+}
+
+function drawLensing(ctx,ox,oy,w,h){
+  const cx=ox+w/2, cy=oy+h/2;
+  // stars behind
+  for(let i=0;i<30;i++){
+    const sx=ox+Math.random()*w, sy=oy+Math.random()*h;
+    ctx.beginPath(); ctx.arc(sx,sy,Math.random()*1.2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(220,230,255,${Math.random()*0.6+0.2})`; ctx.fill();
+  }
+  // lensing arcs
+  for(let a=0;a<6;a++){
+    const angle=a/6*Math.PI*2;
+    const r=55, dr=14;
+    ctx.beginPath();
+    ctx.ellipse(cx+Math.cos(angle)*8, cy+Math.sin(angle)*8, r, dr, angle, -0.6, 0.6);
+    ctx.strokeStyle=`rgba(255,200,100,0.7)`; ctx.lineWidth=2; ctx.stroke();
+  }
+  // central black mass
+  ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2);
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
+  g.addColorStop(0,'#000'); g.addColorStop(0.8,'#000'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,200,100,0.5)'; ctx.lineWidth=1; ctx.stroke();
+  // light path arrows
+  ctx.strokeStyle='rgba(255,220,150,0.4)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.moveTo(ox+10,cy-35); ctx.quadraticCurveTo(cx-25,cy+5,ox+10,cy+35); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox+w-10,cy-35); ctx.quadraticCurveTo(cx+25,cy+5,ox+w-10,cy+35); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawOrbits(ctx,ox,oy,w,h){
+  const cx=ox+w/2, cy=oy+h/2;
+  // central BH
+  ctx.beginPath(); ctx.arc(cx,cy,16,0,Math.PI*2);
+  ctx.fillStyle='#000'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,16,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+  // star orbits
+  const orbits=[
+    {rx:45,ry:30,angle:-0.4,color:'#81d4fa',speed:0.8},
+    {rx:62,ry:40,angle:1.2,color:'#fff59d',speed:0.55},
+    {rx:30,ry:22,angle:2.8,color:'#ffccbc',speed:1.2},
+    {rx:75,ry:50,angle:-1.8,color:'#e1bee7',speed:0.35},
+  ];
+  orbits.forEach((o,i)=>{
+    // orbit ellipse
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.beginPath(); ctx.ellipse(0,0,o.rx,o.ry,i*0.5,0,Math.PI*2);
+    ctx.strokeStyle=o.color+'44'; ctx.lineWidth=1; ctx.stroke();
+    // star position
+    const starX = Math.cos(o.angle)*o.rx, starY = Math.sin(o.angle)*o.ry;
+    ctx.beginPath(); ctx.arc(starX,starY,3,0,Math.PI*2);
+    ctx.fillStyle=o.color; ctx.fill();
+    // trail
+    ctx.beginPath();
+    for(let step=0;step<15;step++){
+      const ta=o.angle-step*0.15;
+      const tx=Math.cos(ta)*o.rx, ty=Math.sin(ta)*o.ry;
+      if(step===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty);
+    }
+    ctx.strokeStyle=o.color+'55'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.restore();
+  });
+  ctx.font='9px "Space Mono"'; ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.fillText('S2-type stars', cx-30, oy+h-14);
+}
+
+function drawAccretion(ctx,ox,oy,w,h){
+  const cx=ox+w/2, cy=oy+h/2+5;
+  // X-ray glow
+  const xg=ctx.createRadialGradient(cx,cy,0,cx,cy,80);
+  xg.addColorStop(0,'rgba(255,80,10,0.35)'); xg.addColorStop(0.5,'rgba(255,50,0,0.1)'); xg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=xg; ctx.fillRect(ox,oy,w,h);
+  // disk rings
+  for(let r=0;r<18;r++){
+    const ri=26+r*5;
+    const alpha=Math.max(0,1-r/18)*0.8;
+    const col = r<6 ? `rgba(255,${160+r*10},${r*15},${alpha})` : `rgba(255,${80+r*8},0,${alpha*0.6})`;
+    ctx.beginPath(); ctx.ellipse(cx,cy,ri,ri*0.25,0,0,Math.PI*2);
+    ctx.strokeStyle=col; ctx.lineWidth=r<6?3:1.5; ctx.stroke();
+  }
+  // BH
+  ctx.beginPath(); ctx.arc(cx,cy,24,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill();
+  // X-ray emission arrows
+  ctx.strokeStyle='rgba(255,150,50,0.5)'; ctx.lineWidth=1.5;
+  for(let a=0;a<8;a++){
+    const angle=a/8*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(angle)*28,cy+Math.sin(angle)*10);
+    ctx.lineTo(cx+Math.cos(angle)*55,cy+Math.sin(angle)*22);
+    ctx.stroke();
+  }
+  ctx.font='9px "Space Mono"'; ctx.fillStyle='rgba(255,150,50,0.6)';
+  ctx.fillText('X-ray/radio emission', ox+8, oy+h-14);
+}
+
+function drawGW(ctx,ox,oy,w,h){
+  const cx=ox+w/2, cy=oy+h/2;
+  // two merging BH
+  const sep=28;
+  [-sep,sep].forEach((dx,i)=>{
+    ctx.beginPath(); ctx.arc(cx+dx,cy,14,0,Math.PI*2);
+    ctx.fillStyle='#000'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+dx,cy,14,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1; ctx.stroke();
+  });
+  // merger orbit
+  ctx.beginPath(); ctx.ellipse(cx,cy,sep+8,16,0,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.stroke();
+  // gravitational waves
+  for(let ring=1;ring<=6;ring++){
+    const r=ring*22+20;
+    const alpha=Math.max(0,(1-ring/7))*0.6;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(150,200,255,${alpha})`;
+    ctx.lineWidth=1.5; ctx.stroke();
+  }
+  // LIGO detector at bottom
+  ctx.strokeStyle='rgba(79,195,247,0.5)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(ox+20,oy+h-30); ctx.lineTo(ox+20,oy+h-55); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox+20,oy+h-30); ctx.lineTo(ox+55,oy+h-30); ctx.stroke();
+  ctx.font='8px "Space Mono"'; ctx.fillStyle='rgba(79,195,247,0.7)';
+  ctx.fillText('LIGO', ox+22,oy+h-14);
+  // wave signal
+  ctx.beginPath(); ctx.strokeStyle='rgba(79,195,247,0.5)'; ctx.lineWidth=1;
+  for(let x=0;x<80;x++){
+    const amp = Math.exp(-Math.pow((x-60)/15,2))*12;
+    const sx=ox+w-90+x, sy=oy+h-42+Math.sin(x*0.5)*amp;
+    if(x===0) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+  }
+  ctx.stroke();
+  ctx.font='9px "Space Mono"'; ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.fillText('GW150914 chirp', ox+w-95, oy+h-14);
+}
+
+// ======== Q&A ========
+const qaData=[
+  {q:'1. What is the simplest scientific definition of a black hole?',
+   a:'A black hole is a region of spacetime where the escape velocity exceeds the speed of light. Because nothing can travel faster than light, nothing can escape once it crosses the event horizon, including matter and radiation. It is defined by what spacetime geometry does near a massive collapsed object, not by any material filling it.'},
+  {q:'2. What is the difference between "cannot escape" and "cannot be seen"?',
+   a:'"Cannot escape" means that once inside the event horizon, all paths through spacetime point inward with no trajectory leading outward. "Cannot be seen" would mean invisible. But the matter and gas around a black hole can be extremely luminous. Accretion disks glow in X-rays and radio waves. Gravitational lensing makes background light visible around the hole. We detect black holes constantly by observing their surroundings, not the hole itself.'},
+  {q:'3. Why is the event horizon not a physical surface?',
+   a:'The event horizon is a boundary defined by mathematics, not by any physical material. It is the set of points from which outward-traveling light rays are just barely trapped. There is no wall, no membrane, no change in local physics there. An astronaut falling through would notice nothing unusual at the moment of crossing. The horizon only has meaning globally, as it marks where the geometry of spacetime permanently curves inward.'},
+  {q:'4. Why do we see bright light near black holes if they are dark?',
+   a:'Black holes themselves emit no light, but the processes around them are among the brightest in the universe. Gas and dust falling inward form an accretion disk. Friction, viscosity, and compression heat this material to tens of millions of degrees Kelvin, which is hot enough to radiate intense X-rays and visible light. This is why quasars (powered by supermassive black holes) outshine entire galaxies. Relativistic jets also produce bright synchrotron radiation across the electromagnetic spectrum.'},
+  {q:'5. Explain two ways scientists detect black holes without seeing them directly.',
+   a:'First, stellar orbital dynamics: scientists track stars near galactic centers over decades. The velocities and elliptical paths of these stars betray the mass of an unseen central object. At the Milky Way\'s center, stars orbit at 3% the speed of light around Sgr A*, and only a 4-million-solar-mass black hole fits the data. Second, gravitational wave detection: when two black holes spiral together and merge, they distort spacetime. LIGO\'s laser interferometers detect length changes of 10⁻¹⁸ m, far smaller than a proton. The waveform shape precisely matches general relativity predictions for black hole mergers.'},
+  {q:'6. What observations would count as evidence against a black hole?',
+   a:'Several observations would challenge or rule out a black hole: (1) A hard surface. A neutron star shows X-ray burst patterns from infalling matter hitting its surface; a black hole cannot, so detecting such bursts in an "accreting black hole candidate" would suggest it has a surface. (2) Non-Keplerian stellar orbits. If orbiting stars showed paths inconsistent with a compact point mass, it would undermine the black hole hypothesis. (3) Gravitational wave signatures inconsistent with event horizon physics. Different compact objects (boson stars, gravastars) would produce subtly different "ringdown" signals. (4) Direct imaging showing a physical surface rather than a shadow.'},
+];
+
+const qaList = document.getElementById('qa-list');
+qaData.forEach((item,i)=>{
+  const div = document.createElement('div'); div.className='qa-item';
+  const q = document.createElement('div'); q.className='qa-q';
+  q.innerHTML=`<span>${item.q}</span><span class="arrow">▶</span>`;
+  const a = document.createElement('div'); a.className='qa-a';
+  a.textContent=item.a;
+  q.onclick=()=>{
+    q.classList.toggle('open');
+    a.classList.toggle('open');
+  };
+  div.appendChild(q); div.appendChild(a);
+  qaList.appendChild(div);
+});
+
+// ======== GLOSSARY ========
+const glossData=[
+  {term:'Singularity',def:'The theoretical point of infinite density at the center of a black hole, where general relativity equations break down. Likely replaced by quantum gravity effects.'},
+  {term:'Event Horizon',def:'The boundary around a black hole from which no light or matter can escape. It is not a physical surface but is defined by spacetime geometry.'},
+  {term:'Schwarzschild Radius',def:'The radius at which a mass, if compressed to a sphere, would become a black hole. For the Sun: ~3 km. For Earth: ~9 mm.'},
+  {term:'Accretion Disk',def:'A disk of gas and dust spiraling into a black hole, heated to millions of degrees by friction and compression, emitting X-rays and light.'},
+  {term:'Spaghettification',def:'The stretching and compression of infalling objects by tidal forces near a black hole. Gravity is stronger on the near side than the far side, tearing matter into strands.'},
+  {term:'Escape Velocity',def:'The minimum speed needed to escape a gravitational field. At Earth\'s surface: 11.2 km/s. At a black hole\'s event horizon: c (speed of light).'},
+  {term:'Photon Sphere',def:'A region at 1.5× the Schwarzschild radius where gravity is strong enough that photons travel in circular orbits.'},
+  {term:'Hawking Radiation',def:'Thermal radiation theoretically emitted by black holes due to quantum effects near the event horizon, causing very slow mass loss.'},
+  {term:'Gravitational Lensing',def:'The bending of light around massive objects, predicted by general relativity. Used to detect black holes via the distortion of background light.'},
+  {term:'LIGO',def:'Laser Interferometer Gravitational-Wave Observatory. Detects spacetime ripples (gravitational waves) from events like merging black holes.'},
+  {term:'Gravitational Time Dilation',def:'Time runs slower in stronger gravitational fields. Near a black hole, time slows dramatically relative to distant observers.'},
+  {term:'Relativistic Jet',def:'A beam of plasma accelerated to near the speed of light, launched along the rotation axis of an accreting black hole by magnetic fields.'},
+  {term:'EHT',def:'Event Horizon Telescope. A global network of radio telescopes that produced the first images of black hole shadows (M87* in 2019, Sgr A* in 2022).'},
+  {term:'Information Paradox',def:'The conflict between quantum mechanics, which holds that information is conserved, and Hawking radiation, which appears to destroy information. This remains an unsolved problem.'},
+  {term:'Tidal Force',def:'The difference in gravitational pull across an extended body. Near a black hole, tidal forces grow extreme, causing spaghettification.'},
+  {term:'Quasar',def:'An extremely luminous active galactic nucleus powered by matter accreting onto a supermassive black hole. Among the brightest objects in the universe.'},
+];
+
+const glossGrid = document.getElementById('gloss-grid');
+glossData.forEach(g=>{
+  const div = document.createElement('div'); div.className='gloss-item';
+  div.innerHTML=`<div class="gloss-term">${g.term}</div><div class="gloss-def">${g.def}</div>`;
+  glossGrid.appendChild(div);
+});
+</script>
+</body>
+</html>

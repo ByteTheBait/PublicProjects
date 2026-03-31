@@ -1,0 +1,11 @@
+[
+    {
+        "TITLE": "MLA Citation Maker",
+        "SUMMARY": "Pretty self-explanatory, essetially just a bot that looks at an article link and parses as best it can inot an approved MLA citation.",
+        "RUNTYPE": "npm",
+        "COMMAND": "npm i&&npm run build",
+        "VERSION": "0.1.2",
+        "AUTHOR": "TheRedPanda"
+
+    }
+]

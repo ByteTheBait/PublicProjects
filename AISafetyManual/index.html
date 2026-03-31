@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The AI Safety Manual</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #04080b;
+  --panel:   #070f14;
+  --card:    #091419;
+  --border:  #0d2530;
+  --border2: #153040;
+  --text:    #a8c8d4;
+  --muted:   #3d6878;
+  --white:   #dff0f6;
+  --grid:    rgba(0,200,255,0.03);
+  --c1: #ff5e3a;
+  --c2: #ffb830;
+  --c3: #00e5ff;
+  --c4: #a78bfa;
+  --c5: #34d399;
+  --c6: #f472b6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.75;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:56px 56px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:300;height:54px;background:rgba(4,8,11,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;padding:0 48px;}
+nav::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--c1) 20%,var(--c2) 35%,var(--c3) 50%,var(--c4) 65%,var(--c5) 80%,transparent 100%);opacity:0.5;}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--white);}
+.brand-pip{width:7px;height:7px;border-radius:50%;background:var(--c1);box-shadow:0 0 10px var(--c1);animation:pip 2.4s ease-in-out infinite;}
+@keyframes pip{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.25;transform:scale(0.7)}}
+.nav-items{display:flex;align-items:center;gap:2px;}
+.nav-items a{font-family:'IBM Plex Mono',monospace;font-size:0.67rem;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:5px 10px;transition:color 0.18s,background 0.18s;border:1px solid transparent;}
+.nav-items a:hover{color:var(--white);background:rgba(255,255,255,0.04);border-color:var(--border2);}
+
+/* HERO — two column */
+.hero-wrap{position:relative;z-index:1;padding-top:54px;}
+.hero{display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:80px 48px;gap:48px;max-width:1280px;margin:0 auto;}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding:80px 28px 60px;}}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--c1);border:1px solid rgba(255,94,58,0.3);background:rgba(255,94,58,0.07);padding:5px 14px;margin-bottom:28px;}
+.hero-tag::before{content:'>';color:rgba(255,94,58,0.4);}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.8rem,6vw,6rem);line-height:0.94;letter-spacing:-0.025em;color:var(--white);margin-bottom:24px;}
+.hero h1 span{display:block;}
+.hero h1 .hollow{-webkit-text-stroke:2px var(--c1);color:transparent;}
+.hero-body{font-size:1rem;color:var(--muted);font-weight:300;max-width:460px;margin-bottom:24px;}
+.hero-note{border-left:3px solid var(--c5);background:rgba(52,211,153,0.06);padding:14px 18px;font-size:0.88rem;color:rgba(52,211,153,0.8);max-width:460px;margin-bottom:36px;}
+.hero-note b{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--c5);}
+.hero-cta{display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--bg);background:var(--c1);padding:13px 28px;text-decoration:none;transition:opacity 0.2s,box-shadow 0.2s;box-shadow:0 0 24px rgba(255,94,58,0.35);}
+.hero-cta:hover{opacity:0.88;box-shadow:0 0 40px rgba(255,94,58,0.5);}
+.hero-cta::after{content:'→';margin-left:4px;}
+
+/* Module index */
+.module-index{display:flex;flex-direction:column;gap:2px;}
+.mi-item{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);padding:14px 18px;text-decoration:none;transition:border-color 0.18s,background 0.18s;position:relative;overflow:hidden;}
+.mi-item::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mc,var(--c1));transform:scaleY(0);transform-origin:bottom;transition:transform 0.22s;}
+.mi-item:hover{border-color:var(--border2);background:rgba(255,255,255,0.02);}
+.mi-item:hover::after{transform:scaleY(1);}
+.mi-num{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted);min-width:24px;}
+.mi-info{flex:1;}
+.mi-title{font-size:0.88rem;font-weight:500;color:var(--text);line-height:1.2;}
+.mi-sub{font-size:0.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.mi-dot{width:8px;height:8px;border-radius:50%;background:var(--mc,var(--c1));flex-shrink:0;opacity:0.6;}
+
+/* SECTION WRAP */
+.sw{position:relative;z-index:1;padding:80px 48px;border-top:1px solid var(--border);}
+.sw:nth-child(even){background:var(--panel);}
+.si{max-width:1100px;margin:0 auto;}
+
+/* CHAPTER HEADER */
+.ch-hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;padding-bottom:28px;margin-bottom:36px;border-bottom:1px solid var(--border);}
+@media(max-width:700px){.ch-hdr{grid-template-columns:auto 1fr;}.ch-tl{grid-column:1/-1;}}
+.ch-n{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:3rem;line-height:1;color:var(--border2);letter-spacing:-0.03em;}
+.ch-ey{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;}
+.ch-ti{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.5rem,3.5vw,2.4rem);line-height:1.0;color:var(--white);letter-spacing:-0.02em;}
+.ch-tl{text-align:right;}
+.tl-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.tl-badge{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border:1px solid;}
+
+.si p{font-size:0.97rem;font-weight:300;color:var(--text);margin-bottom:16px;max-width:860px;}
+
+/* STAT STRIP */
+.ss{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);margin:32px 0;}
+@media(max-width:800px){.ss{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.ss{grid-template-columns:1fr;}}
+.sc{padding:22px 20px;border-right:1px solid var(--border);position:relative;overflow:hidden;}
+.sc:last-child{border-right:none;}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--c1));}
+.si2{font-size:1.3rem;margin-bottom:8px;}
+.sl{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:1.55rem;font-weight:600;line-height:1;color:var(--ac,var(--c1));}
+.sd{font-size:0.8rem;color:var(--muted);margin-top:6px;line-height:1.45;}
+
+/* TWO COL */
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;}
+@media(max-width:760px){.tc{grid-template-columns:1fr;}}
+
+/* RESEARCH CARD */
+.rc{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--ac,var(--c1));padding:22px 24px;}
+.rc-tag{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ac,var(--c1));margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.rc-tag::before{content:'//'}
+.rc p{font-size:0.9rem;color:var(--muted);margin:0;line-height:1.65;}
+.rc p strong{color:var(--white);}
+.rc-cite{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--ac,var(--c1));margin-top:12px;display:block;padding-top:10px;border-top:1px solid var(--border);}
+
+/* WARN CARDS */
+.wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:24px 0;}
+.wc{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-left:3px solid var(--ac,var(--c1));padding:14px 16px;}
+.wc-i{font-size:1.1rem;margin-bottom:6px;}
+.wc-t{font-size:0.87rem;color:var(--text);font-weight:300;line-height:1.5;}
+
+/* ACTION PLAN */
+.ap{margin:32px 0;border:1px solid var(--border);border-top:2px solid var(--ac,var(--c1));background:var(--card);}
+.ap-hdr{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;color:var(--ac,var(--c1));letter-spacing:0.04em;text-transform:uppercase;}
+.ap-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+.ap-s{padding:18px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.ap-s:last-child{border-right:none;}
+.ap-n{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ac,var(--c1));font-weight:600;margin-bottom:8px;}
+.ap-t{font-size:0.87rem;color:var(--text);font-weight:300;line-height:1.55;}
+.ap-t strong{color:var(--white);font-weight:500;}
+
+/* TAGS */
+.tr{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0;}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;padding:3px 10px;border:1px solid var(--border);color:var(--muted);}
+.tag.hi{border-color:rgba(255,94,58,0.4);color:var(--c1);background:rgba(255,94,58,0.06);}
+.tag.md{border-color:rgba(255,184,48,0.4);color:var(--c2);background:rgba(255,184,48,0.06);}
+.tag.lo{border-color:rgba(52,211,153,0.35);color:var(--c5);background:rgba(52,211,153,0.06);}
+.tag.nfo{border-color:rgba(0,229,255,0.35);color:var(--c3);background:rgba(0,229,255,0.06);}
+
+/* CALCULATOR */
+#calculator{padding:80px 48px;position:relative;z-index:1;background:var(--bg);border-top:1px solid var(--border);}
+.ci{max-width:1100px;margin:0 auto;}
+.c-ey{font-family:'IBM Plex Mono',monospace;font-size:0.67rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--c1);margin-bottom:10px;}
+.ci h2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.6rem,3.5vw,2.5rem);color:var(--white);letter-spacing:-0.02em;margin-bottom:8px;}
+.c-sub{font-size:0.92rem;color:var(--muted);margin-bottom:40px;font-weight:300;max-width:680px;}
+.fg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:32px;}
+@media(max-width:900px){.fg{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fi{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--border);padding:12px 14px;cursor:pointer;transition:border-color 0.18s,background 0.18s;user-select:none;}
+.fi:hover{border-color:var(--border2);}
+.fi.on{border-color:var(--c1);background:rgba(255,94,58,0.06);}
+.fcb{width:16px;height:16px;flex-shrink:0;margin-top:2px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:white;transition:background 0.18s,border-color 0.18s;}
+.fi.on .fcb{background:var(--c1);border-color:var(--c1);}
+.ft{font-size:0.84rem;color:var(--text);font-weight:300;line-height:1.45;}
+.fm{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:3px;}
+.rp{display:grid;grid-template-columns:200px 1fr;border:1px solid var(--border);transition:border-color 0.4s;}
+@media(max-width:600px){.rp{grid-template-columns:1fr;}}
+.rs{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center;}
+.rn{font-family:'IBM Plex Mono',monospace;font-size:5rem;font-weight:600;line-height:1;color:var(--c1);transition:color 0.4s;}
+.rnl{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.rt{padding:28px 32px;}
+.rl{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white);margin-bottom:8px;}
+.rd{font-size:0.9rem;color:var(--muted);font-weight:300;line-height:1.65;margin-bottom:20px;}
+.rb-bg{background:var(--border);height:3px;}
+.rb{height:100%;transition:width 0.5s ease,background 0.4s;width:0%;}
+
+/* REFERENCES */
+#references{padding:80px 48px;position:relative;z-index:1;background:var(--panel);border-top:1px solid var(--border);}
+.ri{max-width:1100px;margin:0 auto;}
+.ri>h2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.6rem,3.5vw,2.4rem);color:var(--white);letter-spacing:-0.02em;margin-bottom:8px;}
+.r-intro{font-size:0.9rem;color:var(--muted);margin-bottom:48px;font-weight:300;}
+.rb2{margin-bottom:44px;}
+.rb2-t{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--c3);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.rb2-t::before{content:'//';color:var(--border2);}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;}
+.ref-card{background:var(--card);border:1px solid var(--border);padding:16px 18px;display:flex;gap:14px;transition:border-color 0.18s;}
+.ref-card:hover{border-color:var(--border2);}
+.ri2{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--border2);flex-shrink:0;padding-top:2px;min-width:26px;}
+.ref-title{font-size:0.9rem;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4;}
+.ref-meta{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;}
+.ref-meta a{color:var(--c3);text-decoration:none;}
+.ref-meta a:hover{text-decoration:underline;}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:32px 48px;position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c4),var(--c5),var(--c6));opacity:0.4;}
+.f-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.12em;color:var(--muted);}
+.f-note{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--muted);text-align:right;line-height:1.7;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);}::-webkit-scrollbar-thumb:hover{background:var(--c3);}
+@media(max-width:768px){nav{padding:0 20px;}.nav-items{display:none;}.sw,#calculator,#references,footer{padding-left:24px;padding-right:24px;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><div class="brand-pip"></div>AI SAFETY MANUAL</div>
+  <div class="nav-items">
+    <a href="#ch1">Safety</a>
+    <a href="#ch2">Misinfo</a>
+    <a href="#ch3">Privacy</a>
+    <a href="#ch4">Reliance</a>
+    <a href="#ch5">Bias</a>
+    <a href="#ch6">Autonomy</a>
+    <a href="#calculator">⚠ Risk Check</a>
+    <a href="#references">Research</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+<div class="hero">
+  <div>
+    <div class="hero-tag">SYSTEM MANUAL v2.0 · 6 MODULES · URGENCY-ORDERED</div>
+    <h1><span class="hollow">AI</span><span>Safety</span><span>Manual</span></h1>
+    <p class="hero-body">Science-backed information about artificial intelligence — ordered by urgency, starting with the most critical risks so you know exactly what to protect against first.</p>
+    <div class="hero-note">
+      <b>// Before you begin</b>
+      This manual isn't here to alarm you or position AI as a threat. These tools are genuinely powerful and useful. We're laying out what research shows can go wrong — starting with the most serious risks — so you can use AI with confidence and clear eyes.
+    </div>
+    <a href="#ch1" class="hero-cta">Begin with the most urgent risk</a>
+  </div>
+  <div class="module-index">
+    <a href="#ch1" class="mi-item" style="--mc:var(--c1)"><div class="mi-num">01</div><div class="mi-info"><div class="mi-title">AI Safety &amp; Misuse Risks</div><div class="mi-sub">THREAT: CRITICAL</div></div><div class="mi-dot"></div></a>
+    <a href="#ch2" class="mi-item" style="--mc:var(--c2)"><div class="mi-num">02</div><div class="mi-info"><div class="mi-title">Hallucinations &amp; Misinformation</div><div class="mi-sub">THREAT: HIGH</div></div><div class="mi-dot"></div></a>
+    <a href="#ch3" class="mi-item" style="--mc:var(--c3)"><div class="mi-num">03</div><div class="mi-info"><div class="mi-title">Privacy &amp; AI Surveillance</div><div class="mi-sub">THREAT: HIGH</div></div><div class="mi-dot"></div></a>
+    <a href="#ch4" class="mi-item" style="--mc:var(--c4)"><div class="mi-num">04</div><div class="mi-info"><div class="mi-title">Over-Reliance &amp; Critical Thinking</div><div class="mi-sub">THREAT: MODERATE</div></div><div class="mi-dot"></div></a>
+    <a href="#ch5" class="mi-item" style="--mc:var(--c5)"><div class="mi-num">05</div><div class="mi-info"><div class="mi-title">Algorithmic Bias &amp; Fairness</div><div class="mi-sub">THREAT: MODERATE</div></div><div class="mi-dot"></div></a>
+    <a href="#ch6" class="mi-item" style="--mc:var(--c6)"><div class="mi-num">06</div><div class="mi-info"><div class="mi-title">Autonomy &amp; Human Agency</div><div class="mi-sub">THREAT: SYSTEMIC</div></div><div class="mi-dot"></div></a>
+    <a href="#calculator" class="mi-item" style="--mc:var(--c1)"><div class="mi-num">⚠</div><div class="mi-info"><div class="mi-title">Red Flag Risk Calculator</div><div class="mi-sub">INTERACTIVE TOOL</div></div><div class="mi-dot"></div></a>
+    <a href="#references" class="mi-item" style="--mc:var(--c3)"><div class="mi-num">📡</div><div class="mi-info"><div class="mi-title">Research &amp; Further Reading</div><div class="mi-sub">12 STUDIES · 14 RESOURCES</div></div><div class="mi-dot"></div></a>
+  </div>
+</div>
+</div>
+
+<!-- CH 1: SAFETY -->
+<section class="sw" id="ch1" style="--ac:var(--c1)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">01</div>
+    <div><div class="ch-ey" style="color:var(--c1)">Module 01 · Risk Vectors</div><h2 class="ch-ti">AI Safety &amp; Misuse Risks</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c1);border-color:var(--c1);background:rgba(255,94,58,0.08)">CRITICAL</div></div>
+  </div>
+  <p>AI tools can be weaponized — through voice cloning, deepfakes, AI-generated phishing, and increasingly sophisticated fraud. These aren't theoretical future risks. They are happening now, at scale, and the barrier to entry drops every month. Knowing what these attacks look like is your first line of defence.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c1)"><div class="si2">🎣</div><div class="sl">AI Phishing Surge</div><div class="sv">+1,265%</div><div class="sd">Increase in phishing emails since ChatGPT launched (SlashNext, 2023)</div></div>
+    <div class="sc" style="--ac:var(--c1)"><div class="si2">🗣️</div><div class="sl">Voice Clone Threshold</div><div class="sv">3 sec</div><div class="sd">Amount of audio needed to clone a voice with modern AI tools</div></div>
+    <div class="sc" style="--ac:var(--c1)"><div class="si2">💸</div><div class="sl">AI Fraud Losses</div><div class="sv">$25B+</div><div class="sd">Estimated annual losses from AI-enabled financial fraud (Forbes, 2024)</div></div>
+    <div class="sc" style="--ac:var(--c1)"><div class="si2">🎭</div><div class="sl">Deepfake Growth</div><div class="sv">+550%</div><div class="sd">Increase in deepfake content online, 2019–2023 (Deeptrace Labs)</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c1)">
+      <div class="rc-tag">NCSC/GCHQ Assessment · January 2024</div>
+      <p>The UK's National Cyber Security Centre found that AI is <strong>already lowering the barrier to cyberattacks</strong>, particularly for reconnaissance and spear-phishing. The report concluded AI will <strong>"almost certainly" increase the volume and impact of cyberattacks</strong> over the next two years, with critical national infrastructure at highest risk.</p>
+      <span class="rc-cite">↳ The near-term impact of AI on the cyber threat — NCSC/GCHQ, 2024</span>
+    </div>
+    <div>
+      <div class="wc-grid">
+        <div class="wc"><div class="wc-i">📞</div><div class="wc-t">Urgent calls from "family" asking for money — voice clone scams impersonating loved ones in fake emergencies</div></div>
+        <div class="wc"><div class="wc-i">📧</div><div class="wc-t">Hyper-personalized phishing emails referencing real details about you — AI makes targeted attacks cheap and scalable</div></div>
+        <div class="wc"><div class="wc-i">🎥</div><div class="wc-t">Video calls from apparent colleagues or executives behaving "off" — deepfake impersonation is increasingly convincing</div></div>
+        <div class="wc"><div class="wc-i">🔒</div><div class="wc-t">AI-generated CSAM — synthetic content is illegal in most jurisdictions; report immediately to NCMEC CyberTipline</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="tr">
+    <span class="tag hi">Voice clone scams</span><span class="tag hi">AI-generated phishing</span><span class="tag hi">Deepfake identity fraud</span><span class="tag hi">AI-assisted hacking</span><span class="tag nfo">Watermarking (emerging)</span><span class="tag lo">Detection tools available</span>
+  </div>
+  <div class="ap" style="--ac:var(--c1)">
+    <div class="ap-hdr">// Action Plan — AI Safety &amp; Misuse</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Create a family code word</strong> — use it to verify identity if someone calls claiming to be a loved one in an emergency. Voice clones can't know it.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Verify urgent requests independently</strong> — hang up, find the real number, call back. AI scams always manufacture urgency. Never act on financial pressure in the moment.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Scrutinize personalized emails</strong> — AI generates convincing targeted messages. Check sender addresses carefully; never click unexpected links.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Watermark your creative work</strong> — Adobe Content Credentials (C2PA standard) embeds provenance data into images and video you create.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Report AI-generated CSAM</strong> — in the U.S., submit to NCMEC's CyberTipline at missingkids.org. All AI-generated sexual content involving minors is criminal.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 2: HALLUCINATIONS -->
+<section class="sw" id="ch2" style="--ac:var(--c2)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">02</div>
+    <div><div class="ch-ey" style="color:var(--c2)">Module 02 · Information Integrity</div><h2 class="ch-ti">Hallucinations &amp; Misinformation</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c2);border-color:var(--c2);background:rgba(255,184,48,0.08)">HIGH</div></div>
+  </div>
+  <p>AI language models can produce outputs that are fluent, authoritative, and completely fabricated. This is called "hallucination" — the model generates statistically plausible text with no grounding in actual fact. When AI-generated misinformation is also cheap to produce at scale, the implications for public discourse are serious.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c2)"><div class="si2">🤥</div><div class="sl">Hallucination Rate</div><div class="sv">3–27%</div><div class="sd">Varies by model and task — highest for factual Q&amp;A and citations</div></div>
+    <div class="sc" style="--ac:var(--c2)"><div class="si2">⚖️</div><div class="sl">Legal Consequences</div><div class="sv">Real</div><div class="sd">Multiple lawyers sanctioned for citing entirely fabricated AI-generated case law in court filings</div></div>
+    <div class="sc" style="--ac:var(--c2)"><div class="si2">🗞️</div><div class="sl">AI News Farms</div><div class="sv">100s</div><div class="sd">Apparently legitimate news websites found to be mostly AI-generated content (NewsGuard, 2023)</div></div>
+    <div class="sc" style="--ac:var(--c2)"><div class="si2">😐</div><div class="sl">Confident &amp; Wrong</div><div class="sv">Worst case</div><div class="sd">Models are often most confident precisely when they are most factually wrong</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c2)">
+      <div class="rc-tag">Nature Machine Intelligence · Augenstein et al. · 2023</div>
+      <p>Researchers found that large language models <strong>fail to reliably distinguish true from false claims</strong> across a range of fact-checking benchmarks. Models' expressed confidence was poorly calibrated — they were often most confident when wrong. The researchers called this <strong>"confident hallucination"</strong> and warned it poses serious risks in medical, legal, and journalistic contexts.</p>
+      <span class="rc-cite">↳ Factuality Challenges in the Era of Large Language Models — Nature MI, 2023</span>
+    </div>
+    <div>
+      <div class="wc-grid">
+        <div class="wc"><div class="wc-i">📚</div><div class="wc-t">AI-generated citations — papers, case laws, studies that don't exist, described with convincing precision</div></div>
+        <div class="wc"><div class="wc-i">🖼️</div><div class="wc-t">Out-of-context images recycled as new events — always reverse image search viral photos before trusting them</div></div>
+        <div class="wc"><div class="wc-i">📰</div><div class="wc-t">AI-written articles on legitimate-looking sites — no real editorial oversight, accountability, or fact-checking</div></div>
+        <div class="wc"><div class="wc-i">🔢</div><div class="wc-t">Precise-sounding statistics from no real source — specificity creates false credibility in AI outputs</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ap" style="--ac:var(--c2)">
+    <div class="ap-hdr">// Action Plan — Hallucinations &amp; Misinformation</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Never cite AI outputs directly</strong> in professional, academic, or legal work. Every factual claim needs independent verification from a primary source.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Use AI for structure, not facts</strong> — AI excels at organizing ideas and drafting prose. It is unreliable for specific statistics, data, and citations.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Use detection tools</strong> — Sensity and Microsoft VASA for deepfakes; GPTZero for AI-written text; reverse image search for photos.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Treat AI output as a first draft</strong> — not a finished answer. Research, verification, and judgment remain entirely your responsibility.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Slow down before sharing</strong> — AI misinformation is designed to seem credible. Apply lateral reading and fact-check sites (Snopes, PolitiFact) before amplifying anything.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 3: PRIVACY -->
+<section class="sw" id="ch3" style="--ac:var(--c3)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">03</div>
+    <div><div class="ch-ey" style="color:var(--c3)">Module 03 · Data Sovereignty</div><h2 class="ch-ti">Privacy &amp; AI Surveillance</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c3);border-color:var(--c3);background:rgba(0,229,255,0.08)">HIGH</div></div>
+  </div>
+  <p>AI has supercharged the ability to collect, process, and draw inferences from personal data. Facial recognition, language model chatbots, and smart home devices all create data trails that can reveal deeply personal information — often without meaningful consent from the person being profiled.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c3)"><div class="si2">📷</div><div class="sl">AI Surveillance Cameras</div><div class="sv">770M+</div><div class="sd">AI-enabled cameras deployed worldwide (IHS Markit)</div></div>
+    <div class="sc" style="--ac:var(--c3)"><div class="si2">🗣️</div><div class="sl">Voice Assistants</div><div class="sv">Always On</div><div class="sd">Wake-word detection requires continuous audio monitoring of your environment</div></div>
+    <div class="sc" style="--ac:var(--c3)"><div class="si2">🧠</div><div class="sl">Inference Capability</div><div class="sv">Extreme</div><div class="sd">AI infers health status, sexuality, and political views from seemingly innocuous behavioral data</div></div>
+    <div class="sc" style="--ac:var(--c3)"><div class="si2">📥</div><div class="sl">Chatbot Data Risk</div><div class="sv">Real</div><div class="sd">Inputs to AI tools may be stored, reviewed, and used to train future model versions</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c3)">
+      <div class="rc-tag">PNAS · Matz, Kosinski, Nave &amp; Stillwell · 2017</div>
+      <p>AI models using only Facebook likes could infer personality traits with <strong>greater accuracy than friends, family, or even spouses</strong>. When combined with targeted persuasion techniques, this enabled <strong>psychological manipulation at scale</strong> — a capability since implicated in political influence operations across multiple countries.</p>
+      <span class="rc-cite">↳ Psychological targeting as an effective and ethical tool — PNAS, 114(48), 2017</span>
+    </div>
+    <div>
+      <div class="wc-grid">
+        <div class="wc"><div class="wc-i">🤖</div><div class="wc-t">Chatbots with unclear retention policies — does your conversation get stored and used to train future models?</div></div>
+        <div class="wc"><div class="wc-i">👁️</div><div class="wc-t">Facial recognition check-ins at events, schools, or stores — often deployed without explicit or informed consent</div></div>
+        <div class="wc"><div class="wc-i">📄</div><div class="wc-t">AI tools requesting sensitive document uploads — medical, legal, financial — with vague or broad privacy terms</div></div>
+        <div class="wc"><div class="wc-i">📱</div><div class="wc-t">Apps requesting microphone, camera, or contacts access that aren't necessary for their core functionality</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ap" style="--ac:var(--c3)">
+    <div class="ap-hdr">// Action Plan — Privacy &amp; Surveillance</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Read the privacy policy</strong> before using any AI tool — specifically: is input stored? Does it train future models? Can you opt out?</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Never input sensitive personal data</strong> — medical records, legal documents, passwords, SSNs — unless you've fully verified how it's handled.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Use training opt-outs</strong> — Claude, ChatGPT, and Gemini offer ways to prevent conversations from being used for model training. Find and enable them.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Know your legal rights</strong> — GDPR (EU), CCPA (California), and similar laws give you rights to access, correct, and delete data held about you.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Cover cameras and mics when idle</strong> — especially near always-on smart home devices. Physical controls are more reliable than software settings.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 4: OVER-RELIANCE -->
+<section class="sw" id="ch4" style="--ac:var(--c4)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">04</div>
+    <div><div class="ch-ey" style="color:var(--c4)">Module 04 · Cognitive Sovereignty</div><h2 class="ch-ti">Over-Reliance &amp; Critical Thinking</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c4);border-color:var(--c4);background:rgba(167,139,250,0.08)">MODERATE</div></div>
+  </div>
+  <p>AI platforms are designed to be as capable and fluid as possible — which makes it easy to let them do your thinking. Research is already documenting a real effect: when AI handles the cognitive work, humans stop building the skills, judgment, and independence that come from doing it themselves.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c4)"><div class="si2">🧠</div><div class="sl">Automation Bias</div><div class="sv">Documented</div><div class="sd">People accept AI recommendations even when they're obviously incorrect — simply because a computer said it</div></div>
+    <div class="sc" style="--ac:var(--c4)"><div class="si2">✍️</div><div class="sl">Writing Skills</div><div class="sv">Declining</div><div class="sd">Students using AI writing tools show measurably reduced independent composition ability (multiple studies, 2023–24)</div></div>
+    <div class="sc" style="--ac:var(--c4)"><div class="si2">🏥</div><div class="sl">Medical Deference</div><div class="sv">Observed</div><div class="sd">Clinicians shown to defer to AI diagnostics even when clinical evidence suggests a different conclusion</div></div>
+    <div class="sc" style="--ac:var(--c4)"><div class="si2">🎨</div><div class="sl">Creative Convergence</div><div class="sv">Narrowing</div><div class="sd">Heavy AI use associated with homogeneous outputs — everything begins to look and sound alike</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c4)">
+      <div class="rc-tag">Harvard Business School Working Paper · Bastani et al. · 2024</div>
+      <p>Studying 758 students, researchers found that those using AI on challenging problems <strong>performed significantly worse on subsequent tests without AI</strong> compared to control groups. The study concluded that AI creates <strong>"cognitive offloading"</strong> — outsourcing the mental effort that actually builds lasting skill and deep understanding.</p>
+      <span class="rc-cite">↳ Generative AI Can Harm Learning — HBS Working Paper, 2024</span>
+    </div>
+    <div>
+      <div class="wc-grid">
+        <div class="wc"><div class="wc-i">🤔</div><div class="wc-t">Feeling unable to start a task — an essay, email, or problem — without consulting AI first</div></div>
+        <div class="wc"><div class="wc-i">✅</div><div class="wc-t">Accepting AI output without reading or critically evaluating it — just copying and submitting</div></div>
+        <div class="wc"><div class="wc-i">💬</div><div class="wc-t">Asking AI to make decisions that are yours to make — relationship choices, health decisions, life direction</div></div>
+        <div class="wc"><div class="wc-i">📉</div><div class="wc-t">Using AI as a replacement for learning rather than a supplement — AI summaries instead of source material</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ap" style="--ac:var(--c4)">
+    <div class="ap-hdr">// Action Plan — Over-Reliance &amp; Critical Thinking</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Attempt things yourself first</strong> — try the task before turning to AI. Even a rough draft keeps you cognitively engaged with the material.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Use AI to challenge your thinking</strong> — ask it to critique your ideas and find flaws in your reasoning. This keeps you in the driver's seat.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Keep AI-free zones</strong> — certain decisions, creative works, and learning activities should remain fully yours. Protect them explicitly and consistently.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Practice independent skills regularly</strong> — write without AI sometimes, do mental math, read full texts. Cognition is genuinely use-it-or-lose-it.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Distrust AI confidence</strong> — when an AI sounds certain, that is a design choice, not a measure of accuracy. Always apply your own judgment.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 5: BIAS -->
+<section class="sw" id="ch5" style="--ac:var(--c5)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">05</div>
+    <div><div class="ch-ey" style="color:var(--c5)">Module 05 · Fairness Systems</div><h2 class="ch-ti">Algorithmic Bias &amp; Fairness</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c5);border-color:var(--c5);background:rgba(52,211,153,0.08)">MODERATE</div></div>
+  </div>
+  <p>AI systems learn from human-generated data — and that data encodes documented historical bias. When those patterns are baked into algorithms, they replicate and amplify existing inequalities in hiring, lending, healthcare, and criminal justice. Recognizing and challenging biased AI decisions is an essential skill.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c5)"><div class="si2">👁️</div><div class="sl">Facial Rec. Error Gap</div><div class="sv">34.7%</div><div class="sd">Error rate for dark-skinned women vs 0.8% for light-skinned men (Buolamwini &amp; Gebru)</div></div>
+    <div class="sc" style="--ac:var(--c5)"><div class="si2">🏦</div><div class="sl">Lending Algorithms</div><div class="sv">~2×</div><div class="sd">More likely to deny mortgages to Black applicants vs white applicants with similar credit profiles</div></div>
+    <div class="sc" style="--ac:var(--c5)"><div class="si2">💼</div><div class="sl">Hiring AI Failure</div><div class="sv">Amazon</div><div class="sd">Scrapped its own AI hiring tool after it penalized CVs referencing women's organizations (2018)</div></div>
+    <div class="sc" style="--ac:var(--c5)"><div class="si2">🏥</div><div class="sl">Healthcare Bias</div><div class="sv">56%</div><div class="sd">Of Black patients missed by a widely used healthcare algorithm due to a biased proxy variable (Obermeyer et al.)</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c5)">
+      <div class="rc-tag">Science · Obermeyer et al. · 2019</div>
+      <p>A healthcare algorithm used on <strong>tens of millions of patients</strong> systematically underestimated illness in Black patients, directing less care toward them. The bias arose because <strong>cost was used as a proxy for health need</strong> — but Black patients historically received less care, making them appear healthier in the data than they actually were.</p>
+      <span class="rc-cite">↳ Dissecting racial bias in an algorithm used to manage the health of populations — Science, 366, 2019</span>
+    </div>
+    <div class="rc" style="--ac:var(--c5)">
+      <div class="rc-tag">ACM FAccT · Buolamwini &amp; Gebru · 2018</div>
+      <p>The landmark "Gender Shades" audit tested facial analysis tools from Microsoft, IBM, and Face++. Error rates differed by <strong>up to 34.4 percentage points</strong> between light-skinned males and dark-skinned females. The study directly prompted responses from major technology companies and became foundational in AI fairness research.</p>
+      <span class="rc-cite">↳ Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification — ACM FAccT, 2018</span>
+    </div>
+  </div>
+  <div class="ap" style="--ac:var(--c5)">
+    <div class="ap-hdr">// Action Plan — Algorithmic Bias</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Question AI decisions that affect you</strong> — if a loan, job application, or medical result is unexpected, ask whether AI was used and request human review.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Demand transparency</strong> — organizations using AI for consequential decisions should explain how they were reached. "The algorithm decided" is not acceptable.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Support algorithmic auditing</strong> — advocate for independent third-party audits in institutions that affect your community: courts, banks, hospitals, employers.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Reject false objectivity</strong> — an algorithm isn't neutral because it's mathematical. It reflects the values, priorities, and historical data of those who built it.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Support diverse AI development</strong> — bias is measurably reduced when AI teams include diverse perspectives. Fund, amplify, and advocate for this work.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 6: AUTONOMY -->
+<section class="sw" id="ch6" style="--ac:var(--c6)">
+<div class="si">
+  <div class="ch-hdr">
+    <div class="ch-n">06</div>
+    <div><div class="ch-ey" style="color:var(--c6)">Module 06 · Human Agency</div><h2 class="ch-ti">Autonomy &amp; Human Agency</h2></div>
+    <div class="ch-tl"><div class="tl-lbl">Threat Level</div><div class="tl-badge" style="color:var(--c6);border-color:var(--c6);background:rgba(244,114,182,0.08)">SYSTEMIC</div></div>
+  </div>
+  <p>The deepest question about AI isn't about any single tool — it's about who remains in control. As AI systems become embedded in decisions about employment, credit, healthcare, and information access, the question of whether humans are directing AI or AI is directing humans becomes genuinely important to answer.</p>
+  <div class="ss">
+    <div class="sc" style="--ac:var(--c6)"><div class="si2">🗳️</div><div class="sl">Political Influence</div><div class="sv">Documented</div><div class="sd">AI recommendation algorithms shift political views and voting intention (Epstein &amp; Robertson, 2015)</div></div>
+    <div class="sc" style="--ac:var(--c6)"><div class="si2">📉</div><div class="sl">Jobs at Risk</div><div class="sv">300M</div><div class="sd">Jobs potentially affected by generative AI automation globally (Goldman Sachs, 2023)</div></div>
+    <div class="sc" style="--ac:var(--c6)"><div class="si2">🤖</div><div class="sl">AI in Consequential Decisions</div><div class="sv">Expanding</div><div class="sd">AI now determines outcomes in criminal sentencing, insurance pricing, and loan approvals</div></div>
+    <div class="sc" style="--ac:var(--c6)"><div class="si2">🌐</div><div class="sl">Governance Gap</div><div class="sv">Wide</div><div class="sd">The EU AI Act (2024) is the world's first comprehensive AI law. Most countries still lack equivalent frameworks.</div></div>
+  </div>
+  <div class="tc">
+    <div class="rc" style="--ac:var(--c6)">
+      <div class="rc-tag">PNAS · Epstein &amp; Robertson · 2015</div>
+      <p>A biased search ranking could shift voting preferences of undecided voters by <strong>20% or more</strong>, with participants showing <strong>no awareness they had been influenced</strong>. AI systems now control far more information access than any single search engine ever did — making these stakes considerably higher in the present day.</p>
+      <span class="rc-cite">↳ The search engine manipulation effect (SEME) — PNAS, 112(33), 2015</span>
+    </div>
+    <div class="rc" style="--ac:var(--c6)">
+      <div class="rc-tag">EU Artificial Intelligence Act · 2024</div>
+      <p>The EU AI Act — the world's first comprehensive AI law — classifies AI systems by risk level and <strong>bans certain applications outright</strong>, including real-time facial recognition in public spaces and social scoring systems. It establishes that some AI applications are fundamentally incompatible with basic human rights.</p>
+      <span class="rc-cite">↳ Regulation (EU) 2024/1689 — The EU Artificial Intelligence Act</span>
+    </div>
+  </div>
+  <div class="ap" style="--ac:var(--c6)">
+    <div class="ap-hdr">// Action Plan — Autonomy &amp; Human Agency</div>
+    <div class="ap-steps">
+      <div class="ap-s"><div class="ap-n">STEP 01</div><div class="ap-t"><strong>Know when AI is deciding about you</strong> — you have the right to ask whether AI was used in decisions affecting you and to request human review of those decisions.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 02</div><div class="ap-t"><strong>Diversify your information</strong> — if your news comes entirely from AI-curated feeds, you're experiencing a managed reality. Seek out direct, un-curated sources deliberately.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 03</div><div class="ap-t"><strong>Engage with AI governance</strong> — regulations being written now will shape AI's role for decades. Participate in consultations, support advocacy organizations, and vote for tech-literate representatives.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 04</div><div class="ap-t"><strong>Support AI transparency laws</strong> — advocate for requirements that AI used in consequential decisions must be explainable, auditable, and contestable.</div></div>
+      <div class="ap-s"><div class="ap-n">STEP 05</div><div class="ap-t"><strong>Stay in the loop, not on autopilot</strong> — use AI as a tool you direct. The goal is augmented human capability, not replaced human judgment.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calculator">
+<div class="ci">
+  <div class="c-ey">> INTERACTIVE RISK ASSESSMENT</div>
+  <h2>⚠ The AI Red Flag Calculator</h2>
+  <p class="c-sub">Select any behaviors or experiences that apply to how you currently use AI. This produces an informal risk score — a reflection tool, not a clinical assessment. Flags are ordered to match module priority.</p>
+  <div class="fg" id="flagGrid"></div>
+  <div class="rp" id="resultPanel">
+    <div class="rs"><div class="rn" id="scoreNum">0</div><div class="rnl">Risk Score</div></div>
+    <div class="rt">
+      <div class="rl" id="resLevel">Awaiting Input</div>
+      <div class="rd" id="resDesc">Select flags above to generate your AI risk profile across all six modules.</div>
+      <div class="rb-bg"><div class="rb" id="resBar"></div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- REFERENCES -->
+<section id="references">
+<div class="ri">
+  <div class="c-ey" style="color:var(--c3)">> DATA ARCHIVE</div>
+  <h2>Research, Studies &amp; Further Reading</h2>
+  <p class="r-intro">All studies cited in this manual, plus recommended organizations and books for deeper exploration. All are freely accessible or available through academic libraries.</p>
+
+  <div class="rb2">
+    <div class="rb2-t">Peer-Reviewed Studies</div>
+    <div class="rg">
+      <div class="ref-card"><div class="ri2">[01]</div><div><div class="ref-title">Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification</div><div class="ref-meta">Buolamwini &amp; Gebru · ACM FAccT · 2018 · <a href="https://proceedings.mlsys.org" target="_blank">proceedings.mlsys.org</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[02]</div><div><div class="ref-title">Dissecting racial bias in an algorithm used to manage the health of populations</div><div class="ref-meta">Obermeyer, Powers, Vogeli &amp; Mullainathan · Science, 366 · 2019 · DOI: 10.1126/science.aax2342</div></div></div>
+      <div class="ref-card"><div class="ri2">[03]</div><div><div class="ref-title">Psychological targeting as an effective and ethical tool of political mass persuasion</div><div class="ref-meta">Matz, Kosinski, Nave &amp; Stillwell · PNAS, 114(48) · 2017 · <a href="https://www.pnas.org/doi/10.1073/pnas.1710966114" target="_blank">pnas.org</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[04]</div><div><div class="ref-title">Factuality Challenges in the Era of Large Language Models</div><div class="ref-meta">Augenstein et al. · Nature Machine Intelligence · 2023</div></div></div>
+      <div class="ref-card"><div class="ri2">[05]</div><div><div class="ref-title">Generative AI Can Harm Learning</div><div class="ref-meta">Bastani et al. · Harvard Business School Working Paper · 2024 · <a href="https://www.hbs.edu" target="_blank">hbs.edu</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[06]</div><div><div class="ref-title">The search engine manipulation effect (SEME) and its possible impact on elections</div><div class="ref-meta">Epstein &amp; Robertson · PNAS, 112(33) · 2015 · <a href="https://www.pnas.org/doi/10.1073/pnas.1419828112" target="_blank">pnas.org</a></div></div></div>
+    </div>
+  </div>
+
+  <div class="rb2">
+    <div class="rb2-t">Institutional Reports &amp; Policy</div>
+    <div class="rg">
+      <div class="ref-card"><div class="ri2">[07]</div><div><div class="ref-title">The near-term impact of AI on the cyber threat</div><div class="ref-meta">NCSC/GCHQ · January 2024 · <a href="https://www.ncsc.gov.uk" target="_blank">ncsc.gov.uk</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[08]</div><div><div class="ref-title">The EU Artificial Intelligence Act — Regulation (EU) 2024/1689</div><div class="ref-meta">European Parliament &amp; Council · 2024 · <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689" target="_blank">eur-lex.europa.eu</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[09]</div><div><div class="ref-title">AI Index Report 2024</div><div class="ref-meta">Stanford HAI · <a href="https://aiindex.stanford.edu" target="_blank">aiindex.stanford.edu</a></div></div></div>
+      <div class="ref-card"><div class="ri2">[10]</div><div><div class="ref-title">Generative AI and Jobs — Goldman Sachs Research</div><div class="ref-meta">Goldman Sachs · 2023 · AI's dual impact on productivity and employment</div></div></div>
+    </div>
+  </div>
+
+  <div class="rb2">
+    <div class="rb2-t">Trusted Organizations &amp; Resources</div>
+    <div class="rg">
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">AI Now Institute</div><div class="ref-meta"><a href="https://ainowinstitute.org" target="_blank">ainowinstitute.org</a> — Policy research on AI's social, political, and economic impacts</div></div></div>
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">Algorithmic Justice League</div><div class="ref-meta"><a href="https://ajl.org" target="_blank">ajl.org</a> — Resources on AI bias and harm, founded by Joy Buolamwini</div></div></div>
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">Center for AI Safety</div><div class="ref-meta"><a href="https://safe.ai" target="_blank">safe.ai</a> — Technical and societal AI safety research</div></div></div>
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">Electronic Frontier Foundation — AI &amp; Digital Rights</div><div class="ref-meta"><a href="https://eff.org/issues/ai" target="_blank">eff.org/issues/ai</a> — Advocacy on AI surveillance, privacy, and civil liberties</div></div></div>
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">Partnership on AI</div><div class="ref-meta"><a href="https://partnershiponai.org" target="_blank">partnershiponai.org</a> — Responsible AI best practices and policy guidance</div></div></div>
+      <div class="ref-card"><div class="ri2">↗</div><div><div class="ref-title">MIT Media Lab</div><div class="ref-meta"><a href="https://media.mit.edu" target="_blank">media.mit.edu</a> — Home of Gender Shades and ongoing AI ethics research</div></div></div>
+    </div>
+  </div>
+
+  <div class="rb2">
+    <div class="rb2-t">Recommended Books</div>
+    <div class="rg">
+      <div class="ref-card"><div class="ri2">📖</div><div><div class="ref-title">Atlas of AI — Kate Crawford (2021)</div><div class="ref-meta">The political economy, labor, and environmental costs of AI systems</div></div></div>
+      <div class="ref-card"><div class="ri2">📖</div><div><div class="ref-title">Weapons of Math Destruction — Cathy O'Neil (2016)</div><div class="ref-meta">How opaque algorithms reinforce inequality in policing, education, and finance</div></div></div>
+      <div class="ref-card"><div class="ri2">📖</div><div><div class="ref-title">Human Compatible — Stuart Russell (2019)</div><div class="ref-meta">Why current AI development approaches are unsafe and what to do about it</div></div></div>
+      <div class="ref-card"><div class="ri2">📖</div><div><div class="ref-title">The Alignment Problem — Brian Christian (2020)</div><div class="ref-meta">The challenge of building AI that does what we actually want — and why it's hard</div></div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="f-brand">// AI SAFETY MANUAL</div>
+  <div class="f-note">For educational purposes only · Not medical, legal, or professional advice<br>AI is a tool. Use it wisely. Stay human.</div>
+</footer>
+
+<script>
+const flags = [
+  { text: "You've received a suspicious call or message that may have been AI voice-cloned", cat: "Safety", w: 2 },
+  { text: "You don't have a family code word to verify identity in emergencies", cat: "Safety", w: 2 },
+  { text: "You've clicked a link or acted on an unexpectedly urgent, personalized email", cat: "Safety", w: 3 },
+  { text: "You've cited AI-generated references in professional or academic work", cat: "Misinfo", w: 3 },
+  { text: "You share AI-generated content without fact-checking it first", cat: "Misinfo", w: 3 },
+  { text: "You find it difficult to tell AI-generated text from human-written content", cat: "Misinfo", w: 1 },
+  { text: "You've entered medical, legal, or financial info into an AI chatbot", cat: "Privacy", w: 3 },
+  { text: "You haven't checked whether your AI tool uses your conversations for training", cat: "Privacy", w: 2 },
+  { text: "You use AI apps with broad permissions (mic, camera, contacts) without reviewing", cat: "Privacy", w: 2 },
+  { text: "You struggle to start tasks — writing, problem-solving — without AI first", cat: "Reliance", w: 3 },
+  { text: "You accept AI output without critically reading or evaluating it", cat: "Reliance", w: 2 },
+  { text: "You've let AI make personal decisions — relationships, health choices — for you", cat: "Reliance", w: 3 },
+  { text: "You've accepted an AI decision (job, loan, medical) without questioning it", cat: "Bias", w: 2 },
+  { text: "You assume AI outputs are neutral or objective by default", cat: "Bias", w: 2 },
+  { text: "Almost all your news and information comes from AI-curated feeds", cat: "Autonomy", w: 2 },
+  { text: "You've never tried to opt out of AI data collection on a platform you use", cat: "Autonomy", w: 1 },
+];
+
+const levels = [
+  { max: 4,  label: "Navigating Well",      color: "#34d399", desc: "Few risk indicators detected. Keep applying healthy skepticism and stay current with evolving AI capabilities." },
+  { max: 10, label: "Some Blind Spots",     color: "#00e5ff", desc: "A few areas deserve attention. Review the relevant modules and update your practices accordingly." },
+  { max: 18, label: "Significant Exposure", color: "#ffb830", desc: "Multiple risk indicators present. Work through the action plans in each relevant chapter — especially the higher-ranked modules." },
+  { max: 999,label: "High Risk — Act Now",  color: "#ff5e3a", desc: "Several serious risk factors identified. Your data, safety, and autonomy may be at stake. Implement the action plans now." },
+];
+
+const grid = document.getElementById('flagGrid');
+const checked = new Array(flags.length).fill(false);
+
+flags.forEach((f, i) => {
+  const el = document.createElement('div');
+  el.className = 'fi';
+  el.innerHTML = `<div class="fcb"></div><div><div class="ft">${f.text}</div><div class="fm">MODULE: ${f.cat} &nbsp;·&nbsp; ${f.w > 2 ? '🔴 HIGH' : f.w > 1 ? '🟡 MED' : '🟢 LOW'}</div></div>`;
+  el.addEventListener('click', () => {
+    checked[i] = !checked[i];
+    el.classList.toggle('on', checked[i]);
+    el.querySelector('.fcb').textContent = checked[i] ? '✓' : '';
+    update();
+  });
+  grid.appendChild(el);
+});
+
+function update() {
+  const total = flags.reduce((s, f, i) => s + (checked[i] ? f.w : 0), 0);
+  const max   = flags.reduce((s, f) => s + f.w, 0);
+  const pct   = Math.round(total / max * 100);
+  const lvl   = levels.find(l => total <= l.max);
+  document.getElementById('scoreNum').textContent = total;
+  document.getElementById('scoreNum').style.color = lvl.color;
+  document.getElementById('resLevel').textContent = lvl.label;
+  document.getElementById('resDesc').textContent  = lvl.desc;
+  document.getElementById('resBar').style.width      = pct + '%';
+  document.getElementById('resBar').style.background = lvl.color;
+  document.getElementById('resultPanel').style.borderColor = lvl.color;
+}
+</script>
+</body>
+</html>

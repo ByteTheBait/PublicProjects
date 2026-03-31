@@ -1,0 +1,10 @@
+[
+    {
+        "TITLE": "Quantum Atom",
+        "SUMMARY": "Simplifed model of an atom, under the laws of quantum physics.",
+        "RUNTYPE": "static",
+        "VERSION": "0.1.0",
+        "AUTHOR": "TheRedPanda"
+
+    }
+]

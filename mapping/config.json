@@ -1,0 +1,11 @@
+[
+    {
+        "TITLE": "Steinbeck's Journey",
+        "SUMMARY": "A map rendered using Leaflet depicting John Steinbeck's route through the U.S..",
+        "RUNTYPE": "npm",
+        "COMMAND": "npm i&&npm run build",
+        "VERSION": "0.1.5",
+        "AUTHOR": "TheRedPanda"
+
+    }
+]

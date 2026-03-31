@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Clock with Music</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            background-color: #0d0d0d;
+            display: block;
+            touch-action: none; /* Prevent browser touch gestures */
+        }
+        .controls {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            z-index: 10;
+            user-select: none;
+            max-width: 250px;
+        }
+        .controls h2 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .slider-container {
+            margin-bottom: 1rem;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ffffff;
+            border: 1px solid #ffffff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+            margin-top: -6px;
+        }
+        .music-controls {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            z-index: 10;
+            max-width: 250px;
+        }
+        .music-controls button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background-color: #4a5568;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fractalClockCanvas"></canvas>
+    
+    <div class="controls rounded-xl shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Settings</h2>
+        <div class="slider-container">
+            <label for="depth-slider" class="block text-sm mb-1">Depth: <span id="depth-value">9</span></label>
+            <input type="range" id="depth-slider" min="1" max="12" value="9" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="slider-container">
+            <label for="length-slider" class="block text-sm mb-1">Length Factor: <span id="length-value">0.80</span></label>
+            <input type="range" id="length-slider" min="0.5" max="1.0" step="0.01" value="0.8" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="slider-container">
+            <label for="width-slider" class="block text-sm mb-1">Width Factor: <span id="width-value">0.90</span></label>
+            <input type="range" id="width-slider" min="0.5" max="1.0" step="0.01" value="0.9" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="slider-container">
+            <label for="luminance-slider" class="block text-sm mb-1">Luminance Factor: <span id="luminance-value">0.80</span></label>
+            <input type="range" id="luminance-slider" min="0.5" max="1.0" step="0.01" value="0.8" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="slider-container">
+            <label for="start-width-slider" class="block text-sm mb-1">Start Width: <span id="start-width-value">2.5</span></label>
+            <input type="range" id="start-width-slider" min="0.5" max="5.0" step="0.1" value="2.5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="flex items-center mt-4">
+            <input type="checkbox" id="pause-checkbox" class="w-4 h-4 text-white bg-gray-700 rounded border-gray-600 focus:ring-blue-500 focus:ring-offset-gray-800">
+            <label for="pause-checkbox" class="ml-2 text-sm">Pause</label>
+        </div>
+    </div>
+    
+    <div class="music-controls rounded-xl shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Music Player</h2>
+        <audio id="audio-player" class="w-full mb-4" controls autoplay></audio>
+        <div id="playlist" class="text-sm">
+            <ul id="playlist-ul"></ul>
+        </div>
+    </div>
+    
+    <div id="message-box" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 p-6 rounded-lg text-center shadow-2xl z-20 hidden">
+        <p id="message-text" class="text-white text-lg"></p>
+        <button onclick="document.getElementById('message-box').style.display='none'" class="mt-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200">OK</button>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            const canvas = document.getElementById('fractalClockCanvas');
+            const ctx = canvas.getContext('2d');
+            const TAU = Math.PI * 2;
+    
+            // --- UI Elements ---
+            const depthSlider = document.getElementById('depth-slider');
+            const depthValueSpan = document.getElementById('depth-value');
+            const lengthSlider = document.getElementById('length-slider');
+            const lengthValueSpan = document.getElementById('length-value');
+            const widthSlider = document.getElementById('width-slider');
+            const widthValueSpan = document.getElementById('width-value');
+            const luminanceSlider = document.getElementById('luminance-slider');
+            const luminanceValueSpan = document.getElementById('luminance-value');
+            const startWidthSlider = document.getElementById('start-width-slider');
+            const startWidthValueSpan = document.getElementById('start-width-value');
+            const pauseCheckbox = document.getElementById('pause-checkbox');
+    
+            let config = {
+                paused: false,
+                depth: parseInt(depthSlider.value),
+                lengthFactor: parseFloat(lengthSlider.value),
+                widthFactor: parseFloat(widthSlider.value),
+                luminanceFactor: parseFloat(luminanceSlider.value),
+                startWidth: parseFloat(startWidthSlider.value),
+            };
+    
+            // --- Event Listeners for UI ---
+            depthSlider.addEventListener('input', (e) => {
+                config.depth = parseInt(e.target.value);
+                depthValueSpan.textContent = config.depth;
+            });
+            lengthSlider.addEventListener('input', (e) => {
+                config.lengthFactor = parseFloat(e.target.value);
+                lengthValueSpan.textContent = config.lengthFactor.toFixed(2);
+            });
+            widthSlider.addEventListener('input', (e) => {
+                config.widthFactor = parseFloat(e.target.value);
+                widthValueSpan.textContent = config.widthFactor.toFixed(2);
+            });
+            luminanceSlider.addEventListener('input', (e) => {
+                config.luminanceFactor = parseFloat(e.target.value);
+                luminanceValueSpan.textContent = config.luminanceFactor.toFixed(2);
+            });
+            startWidthSlider.addEventListener('input', (e) => {
+                config.startWidth = parseFloat(e.target.value);
+                startWidthValueSpan.textContent = config.startWidth.toFixed(1);
+            });
+            pauseCheckbox.addEventListener('change', (e) => {
+                config.paused = e.target.checked;
+            });
+    
+            // --- Window Resize and Scaling ---
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+    
+            // --- Drawing Logic ---
+            function drawFractal(pos, dir, length, width, alpha, depth) {
+                if (depth <= 0) return;
+    
+                const endPos = { x: pos.x + dir.x * length, y: pos.y + dir.y * length };
+    
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(endPos.x, endPos.y);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.lineWidth = width;
+                ctx.stroke();
+    
+                const newLength = length * config.lengthFactor;
+                const newWidth = width * config.widthFactor;
+                const newAlpha = alpha * config.luminanceFactor;
+                
+                // Rotations are based on the angles of the other two hands relative to the current one.
+                const angle_from_period = (period, time) => TAU * (time % period / period) - TAU / 4.0;
+                const now = new Date();
+                const totalSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
+                const hourAngle = angle_from_period(12 * 3600, totalSeconds);
+                const minuteAngle = angle_from_period(3600, totalSeconds);
+                const secondAngle = angle_from_period(60, totalSeconds);
+                
+                const relativeRotations = [
+                    (secondAngle - hourAngle + TAU / 2) % TAU,
+                    (minuteAngle - hourAngle + TAU / 2) % TAU,
+                ];
+    
+                for (const rotation of relativeRotations) {
+                    const newDir = {
+                        x: dir.x * Math.cos(rotation) - dir.y * Math.sin(rotation),
+                        y: dir.x * Math.sin(rotation) + dir.y * Math.cos(rotation)
+                    };
+                    drawFractal(endPos, newDir, newLength, newWidth, newAlpha, depth - 1);
+                }
+            }
+    
+            // --- Animation Loop ---
+            function animate() {
+                if (!config.paused) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+                    const now = new Date();
+                    const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+                    const minutes = now.getMinutes() + seconds / 60;
+                    const hours = now.getHours() % 12 + minutes / 60;
+                    
+                    const hourAngle = (hours / 12) * TAU - TAU / 4;
+                    const minuteAngle = (minutes / 60) * TAU - TAU / 4;
+                    const secondAngle = (seconds / 60) * TAU - TAU / 4;
+    
+                    const hands = [
+                        { length: 0.25 * Math.min(canvas.width, canvas.height), angle: hourAngle, dir: {x: Math.cos(hourAngle), y: Math.sin(hourAngle)} },
+                        { length: 0.35 * Math.min(canvas.width, canvas.height), angle: minuteAngle, dir: {x: Math.cos(minuteAngle), y: Math.sin(minuteAngle)} },
+                        { length: 0.45 * Math.min(canvas.width, canvas.height), angle: secondAngle, dir: {x: Math.cos(secondAngle), y: Math.sin(secondAngle)} }
+                    ];
+    
+                    const center = { x: canvas.width / 2, y: canvas.height / 2 };
+    
+                    hands.forEach(hand => {
+                        const startPos = center;
+                        drawFractal(startPos, hand.dir, hand.length, config.startWidth, 1.0, config.depth);
+                    });
+                }
+                requestAnimationFrame(animate);
+            }
+    
+            // --- Music Player Logic ---
+            const audioPlayer = document.getElementById('audio-player');
+            const playlistUl = document.getElementById('playlist-ul');
+            let currentTrack = 0;
+    
+            // REPLACE THESE WITH THE ACTUAL PATHS TO YOUR MP3 FILES
+            const playlist = [
+                { title: 'Song 1', src: 'relax.mp3' },
+                { title: 'Song 2', src: 'summer.mp3' },
+                { title: 'Song 3', src: 'calm.mp3' },
+                { title: 'Song 4', src: 'study.mp3'},
+                { title: 'Song 5', src: 'music_study.mp3'},
+                { title: 'Song 6', src: 'lofi.mp3'}
+            ];
+    
+            function loadPlaylist() {
+                playlistUl.innerHTML = '';
+                playlist.forEach((track, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = track.title;
+                    li.classList.add('cursor-pointer', 'py-1', 'px-2', 'rounded-md', 'hover:bg-gray-700');
+                    li.addEventListener('click', () => {
+                        playTrack(index);
+                    });
+                    playlistUl.appendChild(li);
+                });
+            }
+    
+            function playTrack(index) {
+                currentTrack = index;
+                const track = playlist[currentTrack];
+                audioPlayer.src = track.src;
+                audioPlayer.play();
+                updatePlaylistHighlight();
+            }
+    
+            function updatePlaylistHighlight() {
+                const items = playlistUl.getElementsByTagName('li');
+                for (let i = 0; i < items.length; i++) {
+                    if (i === currentTrack) {
+                        items[i].classList.add('bg-gray-600');
+                    } else {
+                        items[i].classList.remove('bg-gray-600');
+                    }
+                }
+            }
+    
+            audioPlayer.addEventListener('ended', () => {
+                currentTrack = (currentTrack + 1) % playlist.length;
+                playTrack(currentTrack);
+            });
+    
+            loadPlaylist();
+            playTrack(currentTrack);
+    
+            // --- Start the animation ---
+            animate();
+        };
+    </script>
+</body>
+</html>
