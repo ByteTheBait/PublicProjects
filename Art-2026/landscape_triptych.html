@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Landscape Triptych — Micro / Meso / Macro</title>
+<style>
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: #f5f1e8;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    font-weight: 500;
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  p.sub {
+    text-align: center;
+    color: #777;
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 14px;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #8a7a5c;
+    background: #fff;
+    color: #5c4f38;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .controls button.active {
+    background: #8a7a5c;
+    color: #fff;
+  }
+  .triptych {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .panel {
+    width: 280px;
+    border: 1px solid #8a7a5c;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .panel canvas {
+    display: block;
+    width: 100%;
+    height: 280px;
+  }
+  .panel-label {
+    padding: 10px 14px;
+    border-top: 1px solid #ddd;
+  }
+  .panel-label .scale {
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .panel-label .desc {
+    font-size: 13px;
+    color: #777;
+    margin-top: 2px;
+  }
+  .legend {
+    max-width: 980px;
+    margin: 30px auto 0;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #555;
+  }
+  .legend b { color: #333; }
+</style>
+</head>
+<body>
+
+<h1>Landscape project: micro, meso, macro</h1>
+<p class="sub">Same landscape, three scales — click a theme to regenerate</p>
+
+<div class="controls">
+  <button data-theme="coast" class="active">Coastline</button>
+  <button data-theme="desert">Desert</button>
+  <button data-theme="forest">Forest</button>
+  <button id="regen">Regenerate texture</button>
+</div>
+
+<div class="triptych">
+  <div class="panel">
+    <canvas id="micro" width="280" height="280"></canvas>
+    <div class="panel-label">
+      <div class="scale">Micro</div>
+      <div class="desc" id="micro-desc">Sand grains, texture</div>
+    </div>
+  </div>
+  <div class="panel">
+    <canvas id="meso" width="280" height="280"></canvas>
+    <div class="panel-label">
+      <div class="scale">Meso</div>
+      <div class="desc" id="meso-desc">Tide pool, single view</div>
+    </div>
+  </div>
+  <div class="panel">
+    <canvas id="macro" width="280" height="280"></canvas>
+    <div class="panel-label">
+      <div class="scale">Macro</div>
+      <div class="desc" id="macro-desc">Full bay, coastline curve</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const themes = {
+  coast: {
+    palette: ['#e8ddc7', '#c9b896', '#a89268', '#8a7a5c', '#a8c8cc', '#8fb8a8', '#b8d4c8'],
+    micro: 'Sand grains, texture',
+    meso: 'Tide pool, single view',
+    macro: 'Full bay, coastline curve'
+  },
+  desert: {
+    palette: ['#e6c9a0', '#d4a86a', '#b8834a', '#8a5a30', '#f2ddb8', '#c98f52', '#e0b57a'],
+    micro: 'Cracked mud, close-up',
+    meso: 'Single dune, ripples',
+    macro: 'Dune field at sunset'
+  },
+  forest: {
+    palette: ['#c9d4a8', '#8fa868', '#5c7a40', '#3d5a2a', '#d4c088', '#7a8a5c', '#4a6030'],
+    micro: 'Moss and bark texture',
+    meso: 'Clearing with fallen log',
+    macro: 'Ridgeline of trees'
+  }
+};
+
+let currentTheme = 'coast';
+
+function rand(seed) {
+  return function() {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+function drawMicro(ctx, palette, rnd) {
+  ctx.fillStyle = palette[0];
+  ctx.fillRect(0, 0, 280, 280);
+  for (let i = 0; i < 60; i++) {
+    const x = rnd() * 280;
+    const y = rnd() * 280;
+    const r = 6 + rnd() * 16;
+    ctx.fillStyle = palette[1 + Math.floor(rnd() * 3)];
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = palette[3];
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, 230);
+  ctx.bezierCurveTo(80, 210, 160, 240, 280, 220);
+  ctx.stroke();
+}
+
+function drawMeso(ctx, palette, rnd) {
+  ctx.fillStyle = palette[4];
+  ctx.fillRect(0, 0, 280, 280);
+  ctx.fillStyle = palette[5];
+  ctx.beginPath();
+  ctx.ellipse(140, 180, 90, 40, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 8; i++) {
+    ctx.fillStyle = palette[1 + Math.floor(rnd() * 3)];
+    ctx.beginPath();
+    ctx.arc(80 + rnd() * 160, 150 + rnd() * 60, 6 + rnd() * 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = palette[3];
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(20, 90);
+  ctx.lineTo(70, 50);
+  ctx.lineTo(120, 90);
+  ctx.lineTo(170, 50);
+  ctx.lineTo(220, 90);
+  ctx.lineTo(260, 55);
+  ctx.stroke();
+}
+
+function drawMacro(ctx, palette, rnd) {
+  ctx.fillStyle = palette[6];
+  ctx.fillRect(0, 0, 280, 280);
+  ctx.fillStyle = palette[5];
+  ctx.beginPath();
+  ctx.moveTo(0, 150);
+  ctx.quadraticCurveTo(70, 110, 140, 140);
+  ctx.quadraticCurveTo(210, 170, 280, 120);
+  ctx.lineTo(280, 280);
+  ctx.lineTo(0, 280);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = palette[4];
+  ctx.beginPath();
+  ctx.moveTo(0, 190);
+  ctx.quadraticCurveTo(80, 160, 160, 195);
+  ctx.quadraticCurveTo(220, 215, 280, 190);
+  ctx.lineTo(280, 280);
+  ctx.lineTo(0, 280);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function render(themeKey) {
+  const t = themes[themeKey];
+  const seed = Math.floor(Math.random() * 100000);
+  const rnd = rand(seed);
+
+  drawMicro(document.getElementById('micro').getContext('2d'), t.palette, rnd);
+  drawMeso(document.getElementById('meso').getContext('2d'), t.palette, rand(seed + 1));
+  drawMacro(document.getElementById('macro').getContext('2d'), t.palette, rand(seed + 2));
+
+  document.getElementById('micro-desc').textContent = t.micro;
+  document.getElementById('meso-desc').textContent = t.meso;
+  document.getElementById('macro-desc').textContent = t.macro;
+}
+
+document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.controls button[data-theme]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTheme = btn.dataset.theme;
+    render(currentTheme);
+  });
+});
+
+document.getElementById('regen').addEventListener('click', () => render(currentTheme));
+
+render(currentTheme);
+</script>
+
+</body>
+</html>

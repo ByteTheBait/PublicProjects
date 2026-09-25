@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Map Projection Comparison</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; background:#111417; color:#e8e8e8; margin:0; padding:20px; }
+  h1 { font-size:18px; font-weight:600; margin:0 0 4px; }
+  p.sub { color:#9aa0a6; font-size:13px; margin:0 0 16px; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+  select, input, button { background:#1c2126; color:#e8e8e8; border:1px solid #3a4048; border-radius:6px; padding:6px 10px; font-size:13px; }
+  button { cursor:pointer; }
+  button:hover { background:#262c33; }
+  #cityList { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .chip { background:#1c2126; border:1px solid #3a4048; border-radius:14px; padding:4px 10px; font-size:12px; display:flex; align-items:center; gap:6px; }
+  .chip button { border:none; background:none; padding:0; color:#e8798b; font-size:14px; line-height:1; }
+  #autocomplete { position:relative; }
+  #suggestions { position:absolute; top:34px; left:0; background:#1c2126; border:1px solid #3a4048; border-radius:6px; z-index:10; max-height:200px; overflow-y:auto; width:220px; }
+  #suggestions div { padding:6px 10px; cursor:pointer; font-size:13px; }
+  #suggestions div:hover { background:#2a313a; }
+  .legend { display:flex; gap:16px; font-size:12px; color:#9aa0a6; margin-bottom:8px; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  svg { background:#161a1e; border-radius:8px; width:100%; height:auto; }
+  .panel-label { fill:#9aa0a6; font-size:12px; }
+  .land { fill:#3a6b4a; stroke:#2a4d38; stroke-width:0.4; }
+  .ocean { fill:#1b3a52; stroke:none; }
+  .graticule { fill:none; stroke:#ffffff; stroke-width:0.3; opacity:0.15; }
+  .sphere { fill:#1b3a52; stroke:#3a444d; stroke-width:0.5; }
+</style>
+</head>
+<body>
+
+<h1>Map Projection Comparison</h1>
+<p class="sub">Reference (orthographic globe, true relative positions) on the left vs your chosen projection on the right. Lines connect each city's reference point to its projected point — longer, more angled lines mean more distortion at that location.</p>
+
+<div class="controls">
+  <label>Projection:
+    <select id="projSelect"></select>
+  </label>
+  <label>Center on:
+    <select id="centerSelect"></select>
+  </label>
+  <div id="autocomplete">
+    <input id="cityInput" placeholder="Search a city..." autocomplete="off" style="width:200px">
+    <div id="suggestions"></div>
+  </div>
+  <button id="addRandom">Add random major cities</button>
+  <button id="clearAll">Clear</button>
+</div>
+
+<div id="cityList"></div>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#e8798b"></span>Actual projected position</span>
+  <span><span class="swatch" style="background:#5dd3b8"></span>Ideal (true distance/direction from center)</span>
+</div>
+
+<svg id="map" viewBox="0 0 1400 700"></svg>
+
+<script>
+const cities = [
+["New York","USA",40.7128,-74.0060],["Los Angeles","USA",34.0522,-118.2437],
+["London","UK",51.5074,-0.1278],["Paris","France",48.8566,2.3522],
+["Tokyo","Japan",35.6762,139.6503],["Beijing","China",39.9042,116.4074],
+["Shanghai","China",31.2304,121.4737],["Delhi","India",28.6139,77.2090],
+["Mumbai","India",19.0760,72.8777],["Moscow","Russia",55.7558,37.6173],
+["Cairo","Egypt",30.0444,31.2357],["Lagos","Nigeria",6.5244,3.3792],
+["Johannesburg","South Africa",-26.2041,28.0473],["Sao Paulo","Brazil",-23.5505,-46.6333],
+["Buenos Aires","Argentina",-34.6037,-58.3816],["Mexico City","Mexico",19.4326,-99.1332],
+["Sydney","Australia",-33.8688,151.2093],["Auckland","New Zealand",-36.8485,174.7633],
+["Reykjavik","Iceland",64.1466,-21.9426],["Nuuk","Greenland",64.1836,-51.7214],
+["Toronto","Canada",43.6532,-79.3832],["Anchorage","USA",61.2181,-149.9003],
+["Singapore","Singapore",1.3521,103.8198],["Jakarta","Indonesia",-6.2088,106.8456],
+["Nairobi","Kenya",-1.2921,36.8219],["Istanbul","Turkey",41.0082,28.9784],
+["Dubai","UAE",25.2048,55.2708],["Seoul","South Korea",37.5665,126.9780],
+["Bangkok","Thailand",13.7563,100.5018],["Manila","Philippines",14.5995,120.9842],
+["Berlin","Germany",52.5200,13.4050],["Rome","Italy",41.9028,12.4964],
+["Madrid","Spain",40.4168,-3.7038],["Oslo","Norway",59.9139,10.7522],
+["Lima","Peru",-12.0464,-77.0428],["Santiago","Chile",-33.4489,-70.6693],
+["Vancouver","Canada",49.2827,-123.1207],["Honolulu","USA",21.3069,-157.8583],
+["McMurdo Station","Antarctica",-77.8419,166.6863],["Ushuaia","Argentina",-54.8019,-68.3030]
+];
+
+const projections = {
+  "Mercator": d3.geoMercator,
+  "Equirectangular": d3.geoEquirectangular,
+  "Natural Earth": d3.geoNaturalEarth1,
+  "Orthographic (offset)": d3.geoOrthographic,
+  "Azimuthal Equal-Area": d3.geoAzimuthalEqualArea,
+  "Azimuthal Equidistant": d3.geoAzimuthalEquidistant,
+  "Conic Conformal": d3.geoConicConformal,
+  "Conic Equal-Area": d3.geoConicEqualArea,
+  "Gnomonic": d3.geoGnomonic,
+  "Stereographic": d3.geoStereographic,
+  "Transverse Mercator": d3.geoTransverseMercator
+};
+
+const sel = d3.select("#projSelect");
+sel.selectAll("option").data(Object.keys(projections)).enter().append("option")
+  .attr("value", d=>d).text(d=>d);
+sel.property("value", "Mercator");
+
+const centerSel = d3.select("#centerSelect");
+const centerOptions = [["Equator / Prime Meridian",0,0]].concat(cities.map(c=>[c[0]+", "+c[1], c[3], c[2]]));
+centerSel.selectAll("option").data(centerOptions).enter().append("option")
+  .attr("value",(d,i)=>i).text(d=>d[0]);
+
+let selectedCities = [cities[2], cities[7], cities[16], cities[9]];
+
+function renderChips(){
+  const list = d3.select("#cityList");
+  list.selectAll("*").remove();
+  const chip = list.selectAll(".chip").data(selectedCities).enter().append("div").attr("class","chip");
+  chip.append("span").text(d=>d[0]+", "+d[1]);
+  chip.append("button").text("x").on("click", d=>{
+    selectedCities = selectedCities.filter(c=>c!==d);
+    renderChips(); draw();
+  });
+}
+
+const input = d3.select("#cityInput");
+const sugg = d3.select("#suggestions");
+input.on("input", function(){
+  const q = this.value.toLowerCase();
+  sugg.selectAll("*").remove();
+  if(!q) return;
+  const matches = cities.filter(c=>c[0].toLowerCase().includes(q) && !selectedCities.includes(c)).slice(0,8);
+  sugg.selectAll("div").data(matches).enter().append("div")
+    .text(d=>d[0]+", "+d[1])
+    .on("click", d=>{
+      selectedCities.push(d);
+      input.property("value","");
+      sugg.selectAll("*").remove();
+      renderChips(); draw();
+    });
+});
+
+d3.select("#addRandom").on("click", ()=>{
+  const pool = cities.filter(c=>!selectedCities.includes(c));
+  for(let i=0;i<5 && pool.length;i++){
+    const idx = Math.floor(Math.random()*pool.length);
+    selectedCities.push(pool.splice(idx,1)[0]);
+  }
+  renderChips(); draw();
+});
+d3.select("#clearAll").on("click", ()=>{ selectedCities=[]; renderChips(); draw(); });
+
+sel.on("change", draw);
+centerSel.on("change", draw);
+
+const W = 1400, H = 700;
+const svg = d3.select("#map").attr("viewBox", `0 0 ${W} ${H}`);
+const R_EARTH_KM = 6371;
+let landFeature = null;
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json")
+  .then(r => r.json())
+  .then(topo => {
+    landFeature = topojson.feature(topo, topo.objects.land);
+    draw();
+  })
+  .catch(() => { draw(); });
+
+function toRad(d){ return d*Math.PI/180; }
+function greatCircleKm(lat1,lon1,lat2,lon2){
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R_EARTH_KM * 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function makeMainProjection(name, cx, cy, scale, centerLon, centerLat){
+  const ProjFn = projections[name];
+  let p = ProjFn().translate([cx,cy]);
+  if (name.includes("Mercator") || name==="Transverse Mercator") p.scale(scale*0.9).rotate([-centerLon,0]).center([0,centerLat]);
+  else if (name.includes("Conic")) p.scale(scale*0.75).rotate([-centerLon,0]).parallels([20,50]).center([0,centerLat]);
+  else if (name==="Gnomonic") p.scale(scale*0.35).clipAngle(60).rotate([-centerLon,-centerLat]);
+  else if (name.includes("Azimuthal") || name.includes("Orthographic") || name==="Stereographic") p.scale(scale*0.8).rotate([-centerLon,-centerLat]).clipAngle(name==="Stereographic"?150:90);
+  else p.scale(scale*0.85).rotate([-centerLon,0]).center([0,centerLat]);
+  return p;
+}
+
+function draw(){
+  svg.selectAll("*").remove();
+  const projName = sel.property("value");
+  const centerIdx = +centerSel.property("value") || 0;
+  const [,centerLon,centerLat] = centerOptions[centerIdx];
+  const cx = W/2, cy = H/2 + 10, baseScale = 300;
+
+  const mainProj = makeMainProjection(projName, cx, cy, baseScale, centerLon, centerLat);
+  const path = d3.geoPath(mainProj);
+
+  const g = svg.append("g");
+  g.append("path").datum({type:"Sphere"}).attr("class","ocean").attr("d", path);
+  if (landFeature) {
+    g.append("path").datum(landFeature).attr("class","land").attr("d", path);
+  } else {
+    g.append("path").datum(d3.geoGraticule()()).attr("class","graticule").attr("d", path);
+  }
+  g.append("path").datum({type:"Sphere"}).attr("class","sphere").attr("d", path).attr("fill","none");
+  g.append("text").attr("class","panel-label").attr("x",20).attr("y",26).text(projName + " — centered on " + centerOptions[centerIdx][0]);
+
+  const centerPx = mainProj([centerLon, centerLat]);
+  if (!centerPx) return;
+
+  const stepKm = 100;
+  const testLat = centerLat + (stepKm/R_EARTH_KM)*(180/Math.PI);
+  const testPx = mainProj([centerLon, Math.min(89.9, testLat)]);
+  let pxPerKm = 1.5;
+  if (testPx) {
+    const dPx = Math.hypot(testPx[0]-centerPx[0], testPx[1]-centerPx[1]);
+    if (dPx > 0.001) pxPerKm = dPx / stepKm;
+  }
+  const idealScale = pxPerKm * R_EARTH_KM;
+  const idealProj = d3.geoAzimuthalEquidistant().translate([cx,cy]).rotate([-centerLon,-centerLat]).scale(idealScale);
+
+  svg.append("circle").attr("cx",centerPx[0]).attr("cy",centerPx[1]).attr("r",5).attr("fill","none").attr("stroke","#e8c86f").attr("stroke-width",1.5);
+
+  selectedCities.forEach(c=>{
+    const [name,,lat,lon] = c;
+    const actualPt = mainProj([lon,lat]);
+    const idealPt = idealProj([lon,lat]);
+    if (!actualPt || !isFinite(actualPt[0])) return;
+    if (idealPt && isFinite(idealPt[0])) {
+      svg.append("circle").attr("cx",idealPt[0]).attr("cy",idealPt[1]).attr("r",3.5).attr("fill","#5dd3b8");
+      svg.append("line").attr("x1",idealPt[0]).attr("y1",idealPt[1]).attr("x2",actualPt[0]).attr("y2",actualPt[1])
+        .attr("stroke","#8a8f96").attr("stroke-width",1.2).attr("stroke-dasharray","3,3").attr("opacity",0.7);
+    }
+    svg.append("circle").attr("cx",actualPt[0]).attr("cy",actualPt[1]).attr("r",4).attr("fill","#e8798b");
+    svg.append("text").attr("x",actualPt[0]+6).attr("y",actualPt[1]-6).attr("fill","#c8ccd0").attr("font-size",10).text(name);
+  });
+}
+
+renderChips();
+draw();
+</script>
+</body>
+</html>

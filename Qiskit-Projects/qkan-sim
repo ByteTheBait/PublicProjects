@@ -1,0 +1,82 @@
+import torch
+import torch.nn as nn
+import numpy as np
+
+class MultiQubitSimulator:
+    def __init__(self, num_qubits, batch_size=1):
+        self.num_qubits = num_qubits
+        self.batch_size = batch_size
+        self.state_dim = 2 ** num_qubits
+        self.reset_circuit()
+
+    def reset_circuit(self):
+        """Initializes all qubits to the ground state |00...0>."""
+        # Shape: (batch_size, 2, 2, ..., 2) -> One dimension per qubit
+        shape = [self.batch_size] + [2] * self.num_qubits
+        self.state = torch.zeros(shape, dtype=torch.complex64)
+        
+        # Set the |00...0> index to 1.0
+        # Equivalent to index [:, 0, 0, ..., 0]
+        zero_index = (slice(None),) + (0,) * self.num_qubits
+        self.state[zero_index] = 1.0
+
+    def apply_1qubit_gate(self, gate_matrix, target_qubit):
+        """
+        Applies any 2x2 quantum gate to a specific target qubit.
+        Efficiently handles tensor dimensions without manual indexing loops.
+        """
+        # PyTorch dimensions: 0 is batch, target_qubit + 1 is the specific qubit axis
+        axis = target_qubit + 1
+        
+        # Move the target qubit dimension to the end to perform matrix math smoothly
+        state_permuted = torch.movedim(self.state, axis, -1)
+        
+        # Multiply the 2x2 gate matrix against the target qubit's state components
+        # gate_matrix shape: (2, 2)
+        new_state = torch.matmul(state_permuted, gate_matrix.T.to(torch.complex64))
+        
+        # Move the qubit dimension back to its original slot
+        self.state = torch.movedim(new_state, -1, axis)
+
+    def apply_ry(self, target_qubit, theta):
+        """Applies a Rotation-Y gate by angle theta to a target qubit."""
+        # Supports batched angles if theta is a tensor matching batch_size
+        cos_t = torch.cos(theta / 2.0)
+        sin_t = torch.sin(theta / 2.0)
+        
+        # Construct standard RY gate matrix
+        gate = torch.tensor([[cos_t, -sin_t],
+                             [sin_t,  cos_t]], dtype=torch.complex64)
+        self.apply_1qubit_gate(gate, target_qubit)
+
+    def apply_cnot(self, control_qubit, target_qubit):
+        """Applies a Controlled-NOT (CNOT) gate between two qubits."""
+        # To scale past 10 qubits efficiently, we reshape to 1D state vectors per batch
+        flat_shape = (self.batch_size, self.state_dim)
+        flat_state = self.state.view(flat_shape)
+        
+        # Generate the indices of the full vector space
+        indices = torch.arange(self.state_dim)
+        
+        # A CNOT flips the target bit ONLY IF the control bit is 1
+        control_mask = (indices >> (self.num_qubits - 1 - control_qubit)) & 1
+        target_mask = (indices >> (self.num_qubits - 1 - target_qubit)) & 1
+        
+        # Find indices where control is 1 and target is 0, and their flipped counterparts
+        flip_condition = (control_mask == 1) & (target_mask == 0)
+        idx_0 = indices[flip_condition]
+        idx_1 = idx_0 + (1 << (self.num_qubits - 1 - target_qubit))
+        
+        # Swap the probability amplitudes in place to simulate the gate
+        # We clone to prevent overwriting data mid-swap
+        temp = flat_state[:, idx_0].clone()
+        flat_state[:, idx_0] = flat_state[:, idx_1]
+        flat_state[:, idx_1] = temp
+        
+        # Restore the multi-dimensional shape
+        self.state = flat_state.view([self.batch_size] + [2] * self.num_qubits)
+
+    def get_probabilities(self):
+        """Returns the measurement probability for every possible state combination."""
+        return torch.abs(self.state.view(self.batch_size, self.state_dim)) ** 2
+
